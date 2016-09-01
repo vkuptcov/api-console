@@ -1,0 +1,97 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<dom-module id="raml-responses-panel-view">
+  <template>
+    <style>
+    :host {
+      display: block;
+    }
+
+    .container {
+      @apply(--layout-horizontal);
+    }
+
+    .codes {
+      border-right: 1px rgba(0, 161, 223, 0.24) solid;
+    }
+
+    .docs {
+      @apply(--layout-flex);
+      @apply(--paper-font-body1);
+      margin-left: 16px;
+    }
+
+    /*.codes .iron-selected:not([focused]) {
+      background-color: rgba(0, 161, 223, 0.24);
+    }*/
+
+    .label-value {
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .label {
+    }
+
+    .no-data-info {
+      font-style: italic;
+    }
+    .codes paper-item {
+      cursor: pointer;
+    }
+    .codes .green {
+      color: rgba(56,142,60,1);
+    }
+    .codes .green.iron-selected:not([focused]) {
+      background-color: rgba(56, 142, 60, 0.12);
+    }
+    .codes .blue {
+      color: rgba(48,63,159,1);
+    }
+    .codes .blue.iron-selected:not([focused]) {
+      background-color: rgba(48,63,159,0.12);
+    }
+    .codes .orange {
+      color: rgba(245,124,0,1);
+    }
+    .codes .orange.iron-selected:not([focused]) {
+      background-color: rgba(245,124,0,0.12);
+    }
+    .codes .red {
+      color: rgba(211, 47, 47, 1);
+    }
+    .codes .red.iron-selected:not([focused]) {
+      background-color: rgba(211, 47, 47, 0.12);
+    }
+    </style>
+    <div class="container">
+      <div class="codes">
+        <paper-menu selected="{{selectedResource}}">
+          <template is="dom-repeat" items="[[responses]]">
+            <paper-item class$="[[_computeCodeClass(item.statusCode)]]">[[item.statusCode]]</paper-item>
+          </template>
+        </paper-menu>
+      </div>
+      <div class="docs">
+        <iron-pages selected="{{selectedResource}}">
+          <template is="dom-repeat" items="[[responses]]">
+            <section>
+              <p hidden$="[[!_hasProperty(item, 'description')]]">[[item.description]]</p>
+              <p class="no-data-info" hidden$="[[_hasProperty(item, 'description')]]">No description provided.</p>
+              <div hidden$="[[!_hasProperty(item, 'contentType')]]">
+                <span class="label">Content type</span>
+                <span class="label-value">[[item.contentType]]</span>
+              </div>
+              <raml-resource-body-viewer  hidden$="[[!_hasProperty(item, 'body')]]" body="[[item.body]]"></raml-resource-body-viewer>
+            </section>
+          </template>
+        </iron-pages>
+      </div>
+    </div>
+  </template>
+  <script src="raml-responses-panel-view.js"></script>
+</dom-module>

@@ -1,0 +1,52 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+
+<dom-module id="raml-summary-view">
+  <template>
+    <style>
+      :host {
+
+        display: block;
+        --paper-toolbar-title: {
+          margin-left: 8px;
+        }
+      }
+      h1 {
+        @apply(--paper-font-title);
+        margin-top: 40px;
+      }
+
+      p.simple-desc {
+        @apply(--paper-font-subhead);
+        margin: 4px 24px;
+      }
+
+      .api-description {
+        @apply(--paper-font-body2);
+        color: rgba(0, 0, 0, 0.54);
+        margin: 16px 24px;
+      }
+
+      paper-toolbar ~ p.simple-desc:first-of-type {
+        margin-top: 40px;
+      }
+    </style>
+
+    <paper-toolbar>
+      <div class="title">[[name]]</div>
+    </paper-toolbar>
+    <!-- <h1>[[name]]</h1> -->
+    <p class="simple-desc">
+      <label>Base URL</label>
+      <span>[[baseUrl]]</span>
+    </p>
+    <p class="simple-desc" hidden$="[[!showVersion]]">
+      <label>Version</label>
+      <span>[[version]]</span>
+    </p>
+
+    <p class="api-description" hidden$="[[isEmpty(description)]]">[[description]]</p>
+  </template>
+  <script src="raml-summary-view.js"></script>
+</dom-module>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>ARC prototype</title>
+
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="scripts/bootstrap.js"></script>
+
+  <link rel="import" href="bower_components/font-roboto-local/roboto.html">
+  <link rel="import" href="bower_components/paper-styles/paper-styles.html">
+  <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="bower_components/prism-element/prism-highlighter.html">
+
+  <link rel="import" href="styles/theme.html">
+  <link rel="import" href="styles/shared-styles.html">
+  <link rel="import" href="styles/markdown-styles.html">
+
+  <!-- <link rel="import" href="elements/request-panel/request-panel.html">
+  <link rel="import" href="elements/arc-create-project/arc-create-project.html"> -->
+  <!-- <link rel="import" href="elements/raml-view-panel/raml-view-panel.html"> -->
+  <link rel="import" href="elements/raml-summary-view/raml-summary-view.html">
+  <link rel="import" href="elements/raml-detailed-view/raml-detailed-view.html">
+
+  <style is="custom-style" include="shared-styles"></style>
+
+</head>
+<body class="fullbleed layout vertical">
+  <template is="dom-bind" id="app">
+    <prism-highlighter></prism-highlighter>
+
+    <div class="content">
+      <raml-summary-view name="[[raml.name]]" base-url="[[raml.baseUrl]]" version="[[raml.version]]" description="[[raml.description]]"></raml-summary-view>
+      <div class="api-data">
+        <paper-tabs selected="{{selectedTab}}">
+          <paper-tab>Documentation</paper-tab>
+          <paper-tab>Try it</paper-tab>
+        </paper-tabs>
+        <iron-pages selected="[[selectedTab]]" class="docs-tabs">
+          <raml-documentation-panel data="[[raml]]" no-tryit></raml-documentation-panel>
+          <section class="not-ready">
+            This section is not yet ready.
+          </section>
+        </iron-pages>
+      </div>
+    </div>
+
+  </template>
+  <script src="scripts/main.js"></script>
+  <script src="bower_components/prism/components/prism-markdown.js"></script>
+</body>
+</html>

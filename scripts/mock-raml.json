@@ -1,0 +1,301 @@
+{
+  "endpoints": [{
+    "url": "/people",
+    "fullUrl": "/people",
+    "path": ["People"],
+    "displayName": "People",
+    "description": "The people API used to access data about the people.",
+    "queryParams": [],
+    "is": [],
+    "securedBy": ["oauth_2_0"],
+    "methods": [{
+      "method": "POST",
+      "queryParams": [],
+      "headers": [],
+      "displayName": "Create a person",
+      "description": "Use this method to add new person",
+      "body": [{
+        "contentType": "application/json",
+        "baseType": "person"
+      }]
+    },{
+      "method": "GET",
+      "queryParams": [],
+      "headers": [],
+      "displayName": "List people",
+      "description": "Use this method to list all the people.",
+      "is": ["Paginated"]
+    }],
+    "endpoints": [{
+      "url": "/{personId}",
+      "fullUrl": "/people/{personId}",
+      "path": ["People", "A person"],
+      "displayName": "A person",
+      "description": "The endpoint to access information about the person",
+      "queryParams": [],
+      "is": [],
+      "uriParameters": [{
+        "param": "personId",
+        "type": "integer",
+        "required": true,
+        "example": 1234
+      }],
+      "methods": [{
+        "method": "GET",
+        "queryParams": [],
+        "is": [],
+        "headers": [{
+          "name": "Authorization",
+          "example": "ya.uays73HnswHraKG877-Gasd/aIKuVar",
+          "description": "The autjorization token.",
+          "type": "string",
+          "required": true
+        }],
+        "displayName": "Get a person",
+        "description": "Returns a person",
+        "responses": [{
+          "statusCode": 200,
+          "contentType": "application/json",
+          "body": "person"
+        },{
+          "statusCode": "404",
+          "contentType": "application/json",
+          "body": {
+            "baseType": "object",
+            "typeProperties": [{
+              "type": "number",
+              "name": "code",
+              "required": true,
+              "example": 404
+            }, {
+              "type": "string",
+              "name": "error",
+              "required": true,
+              "example": "User not found."
+            }]
+          }
+        }]
+      },{
+        "method": "DELETE",
+        "displayName": "Remove a person",
+        "description": "Removes the person from the datastore. This method do not returns any data in 200 response.",
+        "responses": [{
+          "statusCode": 200
+        }]
+      },{
+        "method": "PUT",
+        "displayName": "Update a person",
+        "description": "Updates the person in the datastore. ",
+        "body": [{
+          "contentType": "application/json",
+          "baseType": "object",
+          "typeProperties": [{
+            "type": "string",
+            "name": "id",
+            "required": true,
+            "pattern": "[A-Za-Z0-9]*"
+          }, {
+            "type": "array",
+            "name": "type",
+            "items": ["string"],
+            "uniqueItems": true
+          }]
+        }],
+        "responses": [{
+          "statusCode": 200
+        }]
+      }]
+    }]
+  },{
+    "url": "/products",
+    "fullUrl": "/products",
+    "path": ["Products"],
+    "displayName": "Products",
+    "description": "The API is to be used to access data about the products.",
+    "queryParams": [],
+    "securedBy": ["oauth_2_0"],
+    "methods": [{
+      "method": "GET",
+      "displayName": "List products",
+      "description": "Returns a list of products.",
+      "queryParams": [],
+      "is": ["Paginated"],
+      "headers": []
+    }]
+  }],
+  "documentation": [{
+    "markdown": "# About the example API\n\nThe `<arc-magic-variables>` element adds \"magic variables\" support in the ARC.\nMagic variables are special strings that are passed to any string property in\nthe request and it will be replaced with other string that is defined for\nthis variable.\n\n## Example\nLet's say you want to generate a random number in the request. So the property\nvalue like:\n```\nhttp://www.domain.com/?time=${now}\n```\ncan produce:\n```\nhttp://www.domain.com/?time=12312312312\n```\n\n## Build-in magic variables.\n| Variable | Description | Example |\n| --- | --- | --- |\n| `${random}` | Will generate random number in range from 0 to Number.MAX_SAFE_INTEGER | 9007199254740991 |\n| `${random:NUMBER}` | A variation of `${random}` where the result will be remembered and can be used in other property. If the same `NUMBER` occurs again then previously generated value will be used. | 7199254740 |\n| `${now}` | Inserts current epoch time | 12312312312 |\n\n## Magic variables scopes\nThere are two types of magic variables:\n* **global** - Applied to every request,\n* **scoped** - Applied to a request enclosed in a project.\n\n### Global variables\nVariables of this type will be applied to every outgoing request.\n\n### Scoped variables.\nScoped variables are associated with a project and are applied to those request\nthat are added to corresponding project.\n\n## User magic variables\nThis element supports user defined variables. Variables defined by the user are kept\nin IndexedDB locally and retreived\nby the element on run time. Users can decide either the variable is global or scoped.\n\n## Database structure\n| Property | Type | Is key | Description |\n| --- | --- | --- | --- |\n| id | Number | Yes, key path | An autoincremental key for the rule |\n| variable | String | Yes | A variable name. It must be consisted with [0-9A-Za-z${}_-] |\n| value | String | No | Replacement value. Replacement value may include other magic variables |\n| type | String | Yes | Either `global` or `scoped` (for now) |\n| project | Number | Yes | Relevant if the `type` is set to `scoped`. The rule will be applied to the requests that are associated with this project. If not set if will be omnited. |\n\n## Usage\nThe element's `value` property contains a value that will be parsed during the work.\nIt may be either String or Object.\n\nWhile String is obvious, the Object will be treated differently. It will parse only\nstring values of each first level key.\nThis means that no deep objects will be taken into consideration.\nBefore start applying new magic variables the program should call `clear()`\nfunction to clear the groups defined by previous use.\nThe element will keep groups generated data so it can be uses many times on\ndifferent strings resulting with the same group values.\n\n```html\n\n\n```\nJavaScript code:\n```\n...\nthis.$.mv.clear();\nthis.set('headersList', headers);\nthis.$.mv.parse();\n...\n_onParsed = (e) => {\n  var headers = e.detail.result;\n};\n...\n```\nThe parse method returns a Promise which will be fulfilled when it finish parsing data:\n```\n...\nthis.set('headersList', headers);\nthis.$.mv.parse()\n.then((result) => {\n  // parsed data\n});\n...\n```",
+    "name": "About"
+  }, {
+    "markdown": "# A test documentation.\n\nThis text was created by ARC's RAML editor.",
+    "name": "Test docs"
+  }],
+  "securitySchemas": [{
+    "type": "OAuth 2.0",
+    "id": "oauth_2_0",
+    "displayName": "",
+    "description": "This API supports OAuth 2.0 for authenticating all API requests.",
+    "authorizationUri": "http://api.domain.com/oauth2/auth",
+    "accessTokenUri": "http://api.domain.com/oauth2/token",
+    "authorizationGrants": ["authorization_code"],
+    "scopes": ["profile", "email"],
+    "queryParams": [{
+      "name": "access_token",
+      "description": "Used to send a valid OAuth 2 access token. Do not use with the \"Authorization\" header.",
+      "type": "string"
+    }],
+    "headers": [{
+      "name": "authorization",
+      "example": "ya.2453vfDb3cJHisdf.*&H",
+      "description": "Used to send a valid OAuth 2 access token. Do not use with the \"access_token\" query string parameter.",
+      "type": "string",
+      "required": false
+    }],
+    "responses": [{
+      "statusCode": 401,
+      "contentType": "application/json",
+      "headers": [],
+      "description": "Bad or expired token. This can happen if the user or Dropbox revoked or expired an access token. To fix, re-authenticate the user."
+    },{
+      "statusCode": 403,
+      "description": "Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...). Unfortunately, re-authenticating the user won't help here."
+    }]
+  },{
+    "type": "OAuth 1.0",
+    "id": "oauth_1_0",
+    "displayName": "",
+    "description": "OAuth 1.0 continues to be supported for all API requests, but OAuth 2.0 is now preferred.",
+    "requestTokenUri": "http://api.domain.com/oauth1/request_token",
+    "authorizationUri": "http://api.domain.com/oauth1/authorize",
+    "tokenCredentialsUri": "http://api.domain.com/oauth1/access_token"
+  }],
+  "types": [{
+    "typeId": "person",
+    "displayName": "Person resource",
+    "description": "An object representing a person in the system.",
+    "typeProperties": [{
+      "type": "string",
+      "name": "id",
+      "pattern": "[A-Za-Z0-9]*",
+      "description": "A unique identifier for a person. It is a 32 signs string containing alphanumeric characters."
+    }, {
+      "type": "string",
+      "name": "name",
+      "required": true,
+      "example": "John Smith",
+      "description": "Person full name. The input will be rejected if this property is not set while creating new object."
+    },{
+      "name": "birthday",
+      "type": "string",
+      "description": "The person's date of birth, represented as YYYY-MM-DD."
+    },{
+      "name": "gender",
+      "type": "string",
+      "description": "The person's gender. Possible values include, but are not limited to, the following values:\n* \"male\" - Male gender.\n* \"female\" - Female gender.\n* \"other\" - Other."
+    },{
+      "name": "url",
+      "type": "string",
+      "description": "The URL of this person's profile."
+    },{
+      "name": "image",
+      "type": "object",
+      "description": "The representation of the person's profile photo.",
+      "typeProperties": [{
+        "name": "url",
+        "type": "string",
+        "description": "The URL of the person's profile photo. To resize the image and crop it to a square, append the query string **?sz=x**, where x is the dimension in pixels of each side."
+      }]
+    },{
+      "name": "tagline",
+      "type": "string",
+      "description": "The brief description (tagline) of this person."
+    },{
+      "name": "etag",
+      "type": "string",
+      "description": "ETag of this response for caching purposes. __ This property will be ignored when creating an object. __"
+    },{
+      "name": "language",
+      "type": "string",
+      "description": "The user's preferred language for rendering."
+    }],
+    "baseType": "object"
+  }, {
+    "typeId": "OtherType",
+    "displayName": "",
+    "description": "Use this type for whatever you want",
+    "typeProperties": [{
+      "type": "string",
+      "name": "id",
+      "required": true,
+      "pattern": "[A-Za-Z0-9]*"
+    }, {
+      "type": "array",
+      "name": "type",
+      "items": ["string"],
+      "uniqueItems": true
+    }],
+    "baseType": "object"
+  }],
+  "traits": [{
+    "name": "Paginated",
+    "description": "Pagination trait.",
+    "usage": "Use it when want to paginate the result",
+    "headers": [{
+      "name": "X-Paginated",
+      "example": "true",
+      "description": "Required for paginated resources. It's value is always true.",
+      "type": "string",
+      "required": true
+    }],
+    "queryParams": [{
+      "name": "limit",
+      "example": "25",
+      "description": "Limit in the response list",
+      "type": "number",
+      "pattern": "[0-9]{,3}"
+    }, {
+      "name": "start",
+      "example": "0",
+      "description": "The start entry of the list",
+      "type": "number",
+      "pattern": "[0-9]{,3}"
+    }],
+    "responses": [{
+      "statusCode": 200,
+      "contentType": "application/json",
+      "headers": [],
+      "description": "Paginated response",
+      "body": {
+        "baseType": "object",
+        "typeProperties": [{
+          "type": "array",
+          "name": "items",
+          "required": true,
+          "items": ["object"]
+        }, {
+          "type": "string",
+          "name": "nextPageToken",
+          "required": true,
+          "example": "asdas87axJNASoHm9Hs"
+        }]
+      }
+    }],
+    "requests": []
+  },{
+    "name": "Secured",
+    "description": "Secured resources by the access token parameter.",
+    "usage": "Use it when want the endpoint or method is secured by the OAuth.",
+    "queryParams": [{
+      "name": "accessToken",
+      "example": "",
+      "description": "The access token obtained by the OAuth endpoint.",
+      "type": "String",
+      "required": true
+    }]
+  }],
+  "name": "My RAML file",
+  "description": "This is a demo API file used in the API console prototype.\nYou can walk through the API documentation and see API endpoints structure, identify the resources, types and traits, and read additional documentation.",
+  "baseUrl": "http://api.domain.com/{version}",
+  "version": "v1",
+  "mediaType": "application/json"
+}
