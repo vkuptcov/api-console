@@ -293,7 +293,7 @@
       "required": true
     }]
   }],
-  "name": "My RAML file",
+  "name": "My RAML API",
   "description": "This is a demo API file used in the API console prototype.\nYou can walk through the API documentation and see API endpoints structure, identify the resources, types and traits, and read additional documentation.",
   "baseUrl": "http://api.domain.com/{version}",
   "version": "v1",
