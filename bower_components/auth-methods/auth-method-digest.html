@@ -1,0 +1,68 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-masked-input/paper-masked-input.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="../iron-form/iron-form.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="auth-methods-behavior.html">
+<link rel="import" href="auth-methods-styles.html">
+<link rel="import" href="cryptojs-import.html">
+
+
+</head><body><dom-module id="auth-method-digest">
+  <template>
+    <style include="auth-methods-styles">
+     :host {
+      display: block;
+      @apply(--auth-method-panel);
+      @apply(--auth-method-digest);
+    }
+    </style>
+    <div class="row">
+      <div class="stepper">
+        <span class="step">[[_computeStep(stepStartIndex, 1)]]</span>
+        <span class="step-header">
+          <span class="step-title">Set authorization data</span>
+        </span>
+      </div>
+      <div class="step-content">
+        <div class="line"></div>
+        <form is="iron-form" id="form" autocomplete="on">
+          <paper-input label="User name" value="{{username}}" type="text" required="" auto-validate="" autocomplete="on">
+            <paper-icon-button suffix="" on-tap="clearUsername" icon="arc:clear" alt="Clear input icon" title="Clear input"></paper-icon-button>
+          </paper-input>
+          <paper-masked-input label="Password" value="{{password}}" required="" auto-validate="" autocomplete="on"></paper-masked-input>
+          <paper-checkbox class="adv-settings-input" checked="{{fullForm}}">Advanced settings</paper-checkbox>
+          <iron-collapse opened="[[fullForm]]">
+            <div class="extended-form">
+              <paper-input label="Server issued realm" value="{{realm}}" type="text" required="[[fullForm]]" auto-validate="" autocomplete="on"></paper-input>
+              <paper-input label="Server issued nonce" value="{{nonce}}" type="text" required="[[fullForm]]" auto-validate="" autocomplete="on"></paper-input>
+              <paper-dropdown-menu label="Quality of protection">
+                <paper-listbox class="dropdown-content" selected="{{qop}}" attr-for-selected="data-qop">
+                  <paper-item data-qop="auth">auth</paper-item>
+                  <paper-item data-qop="auth-int">auth-int</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+              <paper-input label="Nounce count" value="{{nc}}" type="number" required="[[fullForm]]" auto-validate="" autocomplete="on"></paper-input>
+              <paper-dropdown-menu label="Hash algorithm">
+                <paper-listbox class="dropdown-content" selected="{{algorithm}}" attr-for-selected="data-algorithm">
+                  <paper-item data-algorithm="MD5">MD5</paper-item>
+                  <paper-item data-algorithm="MD5-sess">MD5-sess</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+              <paper-input label="Server issued opaque string" value="{{opaque}}" type="string" autocomplete="on"></paper-input>
+              <paper-input label="Client nounce" value="{{cnonce}}" type="string" autocomplete="on"></paper-input>
+            </div>
+          </iron-collapse>
+        </form>
+      </div>
+    </div>
+  </template>
+  <script>Polymer({is:"auth-method-digest",behaviors:[ArcBehaviors.AuthMethodsBehavior],properties:{password:{type:String,notify:!0,value:""},username:{type:String,notify:!0,value:""},fullForm:{type:Boolean,value:!1},realm:{type:String,value:""},nonce:{type:String,value:""},algorithm:{type:String,value:""},qop:{type:String,value:""},nc:{type:Number,value:1},cnonce:{type:String,value:""},opaque:{type:String,value:""},response:{type:String,value:""},httpMethod:{type:String,value:""},requestUrl:{type:String,value:""},requestBody:{type:String,value:""}},get settings(){return this._getSettings()},attached:function(){this.listen(window,"url-value-changed","_onUrlChanged"),this.listen(window,"http-method-changed","_onHttpMethodChanged"),this.listen(window,"body-value-changed","_onBodyChanged"),this.listen(window,"auth-settings-changed","_onAuthSettings")},detached:function(){this.unlisten(window,"url-value-changed","_onUrlChanged"),this.unlisten(window,"http-method-changed","_onHttpMethodChanged"),this.unlisten(window,"body-value-changed","_onBodyChanged"),this.unlisten(window,"auth-settings-changed","_onAuthSettings")},validate:function(t){return t?this.$.form.checkValidity():this.$.form.validate()},observers:["_userInputChanged(username, password, realm, nonce, qop, nc, algorithm, opaque, cnonce, httpMethod, requestUrl, fullForm)"],_getSettings:function(){if(!this.fullForm)return{password:this.password,username:this.username};this.response=this.generateResponse();var t={};return t.username=this.username,t.realm=this.realm,t.nonce=this.nonce,t.uri=this.requestUrl,t.response=this.response,t.opaque=this.opaque,t.qop=this.qop,t.nc=("00000000"+this.nc).slice(-8),t.cnonce=this.cnonce,t},_userInputChanged:function(t,e,n,i,s,r,o,a,h,u,d,g){var l;if(!g)return t&&e?(l={settings:this._getSettings(),type:"digest",valid:!0},void this.fire("auth-settings-changed",l)):(l={settings:void 0,type:"digest",valid:!1},void this.fire("auth-settings-changed",l));if(!(t&&e&&n&&i&&u&&d))return l={settings:void 0,type:"digest",valid:!1},void this.fire("auth-settings-changed",l);if(!r)return this.set("nc",1);if(!h)return this.set("cnonce",this.generateCnonce());var c=this._getSettings();l={settings:c,type:"digest",valid:!0},this.fire("auth-settings-changed",l)},clearUsername:function(){this.username=""},generateCnonce:function(){for(var t="abcdef0123456789",e="",n=0;n<16;n++){var i=Math.round(Math.random()*t.length);e+=t.substr(i,1)}return e},generateResponse:function(){var t=this._getHA1(),e=this._getHA2(),n=("00000000"+this.nc).slice(-8),i=t+":"+this.nonce;return i+=this.qop?":"+n+":"+this.cnonce+":"+this.qop+":"+e:":"+e,CryptoJS.MD5(i).toString()},_getHA1:function(){var t=this.username+":"+this.realm+":"+this.password,e=CryptoJS.MD5(t).toString();return"MD5-sess"===this.algorithm&&(t=e+":"+this.nonce+":"+this.cnonce,e=CryptoJS.MD5(t).toString()),e},_getHA2:function(){var t=this.httpMethod+":"+this.requestUrl;return"auth-int"===this.qop&&(t+=":"+CryptoJS.MD5(this.requestBody).toString()),CryptoJS.MD5(t).toString()},_onUrlChanged:function(t){this.requestUrl=t.detail.value},_onHttpMethodChanged:function(t){this.httpMethod=t.detail.value},_onBodyChanged:function(t){this.requestBody=t.detail.value},_onAuthSettings:function(t){if(this._initialized){var e=Polymer.dom(t);if(e.rootTarget!==this&&"basic"===t.detail.type){var n=t.detail.settings;for(var i in n){var s,r;"uri"===i?(s="requestUrl",r=n[i]):"nc"===i?(r=Number(n[i].replace(/0+/,"")),s=i):(s=i,r=n[i]),this[s]!==r&&(this[s]=r)}}}}});</script>
+</dom-module>
+</body></html>

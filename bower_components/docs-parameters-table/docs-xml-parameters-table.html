@@ -1,0 +1,77 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../marked-element/marked-element.html">
+<link rel="import" href="../prism-element/prism-theme-default.html">
+<link rel="import" href="../prism-element/prism-highlighter.html">
+<link rel="import" href="../markdown-styles/markdown-styles.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="docs-parameters-behavior.html">
+<link rel="import" href="docs-parameters-table-shared-styles.html">
+<link rel="import" href="structure-display.html">
+
+</head><body><dom-module id="docs-xml-parameters-table">
+  <template>
+    <style include="prism-theme-default"></style>
+    <style include="markdown-styles"></style>
+    <style include="docs-parameters-table-shared-styles"></style>
+    <style>
+    :host {
+      display: block;
+    }
+
+    #content {
+      display: none;
+    }
+
+    :host([has-type]) #content {
+      display: block;
+    }
+
+    :host([has-type]) .no-type {
+      display: none;
+    }
+
+    .no-type {
+      @apply(--no-info-message);
+    }
+    </style>
+    <prism-highlighter></prism-highlighter>
+    <p class="no-type">
+      This object doesn't have a type description.
+    </p>
+    <div id="content">
+      <template is="dom-if" if="[[!hasExamples]]" restamp="true">
+        <iron-collapse opened="[[structureDisplayOpened]]">
+          <div>
+            <pre is="structure-display" display="[[schemaDisplay]]" class="language-xml" data-type="xml" auto-hide=""></pre>
+          </div>
+        </iron-collapse>
+      </template>
+      <template is="dom-if" if="[[hasExamples]]" restamp="true">
+        <iron-collapse opened="[[structureDisplayOpened]]">
+          <div>
+            <paper-tabs class="schemas" selected="{{selectedSchemaPage}}">
+              <paper-tab>Schema</paper-tab>
+              <paper-tab>Examples</paper-tab>
+            </paper-tabs>
+            <iron-pages selected="{{selectedSchemaPage}}">
+              <div class="schema">
+                <h5 hidden$="[[!type.schema]]">Schema: [[type.schema]]</h5>
+                <pre is="structure-display" display="[[schemaDisplay]]" class="language-xml" data-type="xml" auto-hide=""></pre>
+              </div>
+              <div class="examples">
+                <template is="dom-repeat" items="[[examples]]">
+                  <pre is="structure-display" display="[[item]]" class="language-xml" data-type="xml" auto-hide=""></pre>
+                </template>
+              </div>
+            </iron-pages>
+          </div>
+        </iron-collapse>
+      </template>
+    </div>
+  </template>
+  <script>Polymer({is:"docs-xml-parameters-table",behaviors:[RamlBehaviors.DocsParametersBehavior],properties:{type:Object,schemaDisplay:{type:String,computed:"_computeDisplay(type.*)"},hasType:{type:Boolean,computed:"_computeHasType(schemaDisplay)",value:!1,notify:!0,reflectToAttribute:!0},examples:{type:Array,computed:"_computeExamples(type.*)"},selectedSchemaPage:{type:Number,value:0},narrow:{type:Boolean,reflectToAttribute:!0}},_computeHasType:function(e){return!!e},_computeDisplay:function(e){var t=e.base;if(t)return t.schema&&t.schemaContent?t.schemaContent:t.type&&"string"==typeof t.type?t.type:void 0}});</script>
+</dom-module>
+</body></html>

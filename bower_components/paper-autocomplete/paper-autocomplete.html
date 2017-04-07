@@ -1,0 +1,49 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../iron-scroll-target-behavior/iron-scroll-target-behavior.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+
+</head><body><dom-module id="paper-autocomplete">
+  <style>
+  :host {
+    position: absolute !important;
+    left: 0px;
+    top: 52px;
+    @apply(--paper-autocomplete);
+  }
+
+  paper-material {
+    background-color: white;
+  }
+
+  #container {
+    overflow: auto;
+  }
+  </style>
+  <template>
+    <paper-material elevation="2" id="container">
+      <paper-progress hidden$="[[!_showLoader]]" indeterminate=""></paper-progress>
+      <iron-selector selected="{{selectedItem}}" id="selector">
+        <template is="dom-repeat" items="{{suggestions}}" id="repeater">
+          <paper-item>
+            <div>{{_suggestionDisplay(item)}}</div>
+            <paper-ripple></paper-ripple>
+          </paper-item>
+        </template>
+      </iron-selector>
+    </paper-material>
+    <iron-a11y-keys id="a11y" target="[[target]]" keys="up" on-keys-pressed="selectPrevious"></iron-a11y-keys>
+    <iron-a11y-keys id="a11y" target="[[target]]" keys="down" on-keys-pressed="selectNext"></iron-a11y-keys>
+    <iron-a11y-keys id="a11y" target="[[target]]" keys="enter" on-keys-pressed="acceptSelection"></iron-a11y-keys>
+    <iron-a11y-keys id="a11y" target="[[this]]" keys="up" on-keys-pressed="selectPrevious"></iron-a11y-keys>
+    <iron-a11y-keys id="a11y" target="[[this]]" keys="down" on-keys-pressed="selectNext"></iron-a11y-keys>
+    <iron-a11y-keys id="a11y" target="[[this]]" keys="enter" on-keys-pressed="acceptSelection"></iron-a11y-keys>
+  </template>
+</dom-module>
+<script>Polymer({is:"paper-autocomplete",behaviors:[Polymer.IronOverlayBehavior,Polymer.IronScrollTargetBehavior],properties:{source:{type:Array},value:{type:Object,notify:!0},suggestions:{type:Array,value:[],readOnly:!0},target:HTMLElement,selectedItem:{type:Number,value:0},scrollTarget:{type:Object,value:function(){return this.$.container}},sizingTarget:{type:HTMLElement,value:function(){return this.$.container}},loading:{type:Boolean,value:!1,readOnly:!0,notify:!0},loader:{type:Boolean,value:!1},_showLoader:{type:Boolean,computed:"_computeShowLoader(loader, loading)"},isAttached:Boolean,openOnFocus:{type:Boolean,value:!1},_oldTarget:HTMLElement},observers:["_targetChanged(target, isAttached)","_filterSuggestions(source, _oldTarget, isAttached)"],listeners:{tap:"acceptSelection"},_targetChanged:function(e,t){t&&(this.resetFit(),this._oldTarget&&(this.unlisten(this._oldTarget,"input","_valueChanged"),this.unlisten(this._oldTarget,"focus","_targetFocus"),this._oldTarget=null),e&&("string"==typeof e?this.target=this.domHost?this.domHost.$[e]:Polymer.dom(this.ownerDocument).querySelector("#"+e):e&&(this.listen(e,"input","_valueChanged"),this.listen(e,"focus","_targetFocus"),this._oldTarget=e,e===document.activeElement&&this._targetFocus())))},_valueChanged:function(){if(this.isAttached&&this._oldTarget){var e=this._oldTarget.value;if(this._previousQuery){if(0===e.indexOf(this._previousQuery))return this._previousQuery=e,void this._filterSuggestions();this._previousQuery=null,this._setSuggestions([])}else if(!e&&void 0===this._previousQuery)return;this.fire("query",{value:e}),this._previousQuery=e,this.opened||(this.selectedItem=0),this._filterSuggestions(),this._setLoading(!0)}},_filterSuggestions:function(){if(this.isAttached&&this._oldTarget&&void 0!==this._previousQuery){this._setLoading(!1);var e=this.source;if(!e)return void this._setSuggestions([]);var t=this._previousQuery?this._previousQuery.toLowerCase():"",s=function(e){var s="string"==typeof e?e:e.value;return s.toLowerCase().indexOf(t)!==-1},i=t?e.filter(s):e;if(0===i.length)return void this.close();i.sort(function(e,s){var i="string"==typeof e?e:e.value,o="string"==typeof s?s:s.value,r=i.indexOf(t),n=o.indexOf(t);return 0===r&&0!==n?1:0!==r&&0===n?-1:i>o?1:i<o?-1:0}),this._setSuggestions(i),this.opened=!0}},_suggestionDisplay:function(e){return e.value||e},selectPrevious:function(){this.suggestions&&this.suggestions.length&&(this.opened||(this.opened=!0),this.$.selector.selectPrevious(),this.ensureItemVisible(!1))},selectNext:function(){this.suggestions&&this.suggestions.length&&(this.opened||(this.opened=!0),this.$.selector.selectNext(),this.ensureItemVisible(!0))},acceptSelection:function(){if(this.opened&&this.suggestions&&this.suggestions.length){var e=this.$.repeater.itemForElement(this.$.selector.selectedItem);"string"!=typeof e&&(e=e.value),this.async(function(){this._inform(e)},1)}},_inform:function(e){var t=this.fire("selected",{value:e},{cancelable:!0});t.defaultPrevented||(this.target.value=e),this.close()},ensureItemVisible:function(e){if(this.opened&&this.suggestions&&this.suggestions.length){var t=this.scrollTarget,s=this.$.selector.selected;if(e&&0===s)return void this.scroll(0);var i;if(!e&&s===this.suggestions.length-1)return i=t.scrollHeight-t.offsetHeight,void this.scroll(0,i);var o=this.$.selector.selectedItem,r=e?t.offsetHeight:0,n=e?o.offsetHeight:0,u=r+t.scrollTop,l=o.offsetTop+n;e&&l>u?(i=o.offsetHeight+o.offsetTop-t.offsetHeight,this.scroll(0,i)):!e&&u>l&&this.scroll(0,l)}},_computeShowLoader:function(e,t){return!!e&&!!t},_targetFocus:function(){this.openOnFocus&&!this.opened&&(this._previousQuery=this._previousQuery||"",this.async(this._valueChanged,100))}});</script>
+</body></html>

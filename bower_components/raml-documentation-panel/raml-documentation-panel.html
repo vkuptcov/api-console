@@ -1,0 +1,59 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../raml-docs-method-viewer/raml-docs-method-viewer.html">
+<link rel="import" href="../raml-docs-documentation-viewer/raml-docs-documentation-viewer.html">
+<link rel="import" href="../raml-docs-resource-viewer/raml-docs-resource-viewer.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../raml-summary-view/raml-summary-view.html">
+<link rel="import" href="../raml-docs-types-viewer/raml-docs-types-viewer.html">
+<link rel="import" href="raml-documentation-empty-state.html">
+ 
+</head><body><dom-module id="raml-documentation-panel">
+  <template>
+    <style>
+     :host {
+      display: block;
+      height: 100%;
+      @apply(--raml-documentation-panel);
+    }
+
+    .docs-content {
+      max-width: var(--raml-docs-main-content-width, 900px);
+      @apply(--layout-flex);
+      @apply(--raml-docs-main-content);
+    }
+
+    .docs-content raml-docs-documentation-viewer {
+      max-width: var(--raml-docs-documentation-width, 700px);
+    }
+
+    .no-selection,
+    .docs-content {
+      height: 100%;
+    }
+    </style>
+    <iron-media-query query="(max-width: [[narrowWidth]])" query-matches="{{narrow}}"></iron-media-query>
+    <div class="docs-content">
+      <div class="no-selection" hidden$="[[hasSelection]]">
+        <raml-documentation-empty-state></raml-documentation-empty-state>
+      </div>
+      <template is="dom-if" if="[[isMethod]]">
+        <raml-docs-method-viewer parent-endpoint="[[selectedParent]]" raml="[[selectedObject]]" narrow="[[narrow]]"></raml-docs-method-viewer>
+      </template>
+      <template is="dom-if" if="[[isResource]]">
+        <raml-docs-resource-viewer raml="[[selectedObject]]" current-path="{{path}}" narrow="[[narrow]]" scroll-target="[[scrollTarget]]"></raml-docs-resource-viewer>
+      </template>
+      <template is="dom-if" if="[[isDocumentation]]">
+        <raml-docs-documentation-viewer documentation="[[selectedObject]]" narrow="[[narrow]]"></raml-docs-documentation-viewer>
+      </template>
+      <template is="dom-if" if="[[isSummary]]">
+        <raml-summary-view raml="[[selectedObject]]" narrow="[[narrow]]"></raml-summary-view>
+      </template>
+      <template is="dom-if" if="[[isType]]">
+        <raml-docs-types-viewer type="[[selectedObject]]" narrow="[[narrow]]"></raml-docs-types-viewer>
+      </template>
+    </div>
+  </template>
+  <script>Polymer({is:"raml-documentation-panel",properties:{path:{type:String,notify:!0,observer:"_pathChanged"},selectedObject:Object,selectedParent:Object,narrow:{type:Boolean,notify:!0,reflectToAttribute:!0},narrowWidth:{type:String,value:"768px"},isMethod:{type:Boolean,readOnly:!0,value:!1},isResource:{type:Boolean,readOnly:!0,value:!1},isDocumentation:{type:Boolean,readOnly:!0,value:!1},isSummary:{type:Boolean,readOnly:!0,value:!1},isType:{type:Boolean,readOnly:!0,value:!1},hasSelection:{type:Boolean,value:!1,notify:!0,computed:"_computeHasSelection(isMethod, isResource, isDocumentation, isSummary, isType)"},scrollTarget:HTMLElement,handlePathEvents:{type:Boolean,observer:"_handleEventsChanged"},isElementAttached:{type:Boolean,readOnly:!0}},observers:["_handleEventsChanged(handlePathEvents, isElementAttached)"],attached:function(){this._setIsElementAttached(!0)},detached:function(){this._setIsElementAttached(!1)},_computeHasSelection:function(e,t,n,a,s){return!!(e||t||n||a||s)},_pathChanged:function(e){if(!this.handlePathEvents){var t=!1,n=!1,a=!1,s=!1,o=!1;e&&(0===e.indexOf("documentation")?a=!0:/methods\.\d+$/.test(e)?t=!0:/resources\.\d+$/.test(e)?n=!0:"summary"===e?s=!0:/types\.\d+$/.test(e)&&(o=!0)),this._setIsMethod(t),this._setIsResource(n),this._setIsDocumentation(a),this._setIsSummary(s),this._setIsType(o)}},_handleEventsChanged:function(e,t){e&&t?this.registerPathEvents():this.unregisterPathEvents()},registerPathEvents:function(){this.listen(window,"raml-is-method-changed","_onChangedSateMethod"),this.listen(window,"raml-is-resource-changed","_onChangedSateResource"),this.listen(window,"raml-is-documentation-changed","_onChangedSateDocs"),this.listen(window,"raml-is-summary-changed","_onChangedSateSummary"),this.listen(window,"raml-is-type-changed","_onChangedSateType")},unregisterPathEvents:function(){this.unlisten(window,"raml-is-method-changed","_onChangedSateMethod"),this.unlisten(window,"raml-is-resource-changed","_onChangedSateResource"),this.unlisten(window,"raml-is-documentation-changed","_onChangedSateDocs"),this.unlisten(window,"raml-is-summary-changed","_onChangedSateSummary"),this.unlisten(window,"raml-is-type-changed","_onChangedSateType")},_onChangedSateMethod:function(e){this._setIsMethod(e.detail.state)},_onChangedSateResource:function(e){this._setIsResource(e.detail.state)},_onChangedSateDocs:function(e){this._setIsDocumentation(e.detail.state)},_onChangedSateSummary:function(e){this._setIsSummary(e.detail.state)},_onChangedSateType:function(e){this._setIsType(e.detail.state)}});</script>
+</dom-module>
+</body></html>

@@ -1,0 +1,15 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+
+</head><body><dom-module id="date-time">
+  <template>
+    <style>
+    :host {
+      display: inline;
+      @apply(--date-time);
+    }
+    </style>
+    <time datetime$="[[iso]]">[[display]]</time>
+  </template>
+  <script>Number.isInteger=Number.isInteger||function(e){return"number"==typeof e&&isFinite(e)&&Math.floor(e)===e},Polymer({is:"date-time",properties:{locales:{type:String,observer:"_update"},date:{type:Date,observer:"_update"},display:String,year:{type:String,observer:"_update"},month:{type:String,observer:"_update"},day:{type:String,observer:"_update"},hour:{type:String,observer:"_update"},minute:{type:String,observer:"_update"},second:{type:String,observer:"_update"},weekday:{type:String,observer:"_update"},timeZoneName:{type:String,observer:"_update"},era:{type:String,observer:"_update"},timeZone:{type:String,observer:"_update"},hour12:{type:Boolean,observer:"_update"},iso:{type:String,readOnly:!0},isReady:Boolean},ready:function(){this.isReady=!0,this._update()},_update:function(){if(this.isReady){var e=this.date;if(e)if("string"==typeof e)try{e=new Date(e);var t=e.getDate();t!==t&&(e=new Date)}catch(t){e=new Date}else Number.isInteger(e)?e=new Date(e):e instanceof Date||(e=new Date);else e=new Date;var i={year:this.year?this.year:void 0,month:this.month?this.month:void 0,day:this.day?this.day:void 0,hour:this.hour?this.hour:void 0,minute:this.minute?this.minute:void 0,second:this.second?this.second:void 0,weekday:this.weekday?this.weekday:void 0,era:this.era?this.era:void 0,timeZoneName:this.timeZoneName?this.timeZoneName:void 0,timeZone:this.timeZone?this.timeZone:void 0};void 0!==this.hour12&&(i.hour12=this.hour12);var r;this.locales&&(r=this.locales);var a=new Intl.DateTimeFormat(r,i).format(e);this.set("display",a),this._setIso(e.toISOString())}}});</script>
+</dom-module>
+</body></html>

@@ -1,0 +1,22 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="../markdown-styles/markdown-styles.html">
+<link rel="import" href="../prism-element/prism-highlighter.html">
+
+</head><body><dom-module id="structure-display">
+  <template strip-whitespace="">
+    <style include="markdown-styles"></style>
+    <style>
+    :host {
+      background-color: var(--code-background-color, #f5f2f0) !important;
+    }
+    #output {
+      @apply(--code-block);
+    }
+    </style>
+    <prism-highlighter></prism-highlighter>
+    <div id="output" class="markdown-html"></div>
+  </template>
+  <script>Polymer({is:"structure-display",extends:"pre",properties:{display:String,dataType:{type:String,value:"js"},autoHide:{type:Boolean,value:!1},_ready:Boolean},observers:["_highlightSchema(display)","_autoHideChanged(autoHide, display)"],ready:function(){this.classList.add("markdown-html"),this._ready=!0,this._highlightSchema(this.display)},_autoHideChanged:function(t,i){t?i?this.hasAttribute("hidden")&&this.removeAttribute("hidden"):this.hasAttribute("hidden")||this.setAttribute("hidden",!0):this.hasAttribute("hidden")&&this.removeAttribute("hidden")},_highlightSchema:function(t){if(this._ready)return t?void this.debounce("structure-display-highlight",function(){this.$.output.innerHTML=this.highlight(t,this.dataType)},10):void(this.$.output.innerHTML="")},highlight:function(t,i){return this.fire("syntax-highlight",{code:t,lang:i}).detail.code}});</script>
+</dom-module>
+</body></html>

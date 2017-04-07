@@ -1,0 +1,46 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../headers-parser-behavior/headers-parser-behavior.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="headers-list-item.html">
+
+</head><body><dom-module id="headers-list-view">
+  <template>
+    <style>
+    :host {
+      display: block;
+      @apply(--headers-list-view);
+    }
+
+    .dialog-header-example {
+      @apply(--arc-font-body1);
+      margin-top: 16px;
+    }
+
+    .dialog-header-desc {
+      @apply(--arc-font-body2);
+    }
+    </style>
+
+    <template is="dom-repeat" items="[[_headers]]">
+      <headers-list-item on-dblclick="_displayHeaderInfo" name="[[item.name]]" value="[[item.value]]"></headers-list-item>
+    </template>
+
+    <paper-dialog id="headerInfo">
+      <h2>[[_hdTitle]]</h2>
+      <paper-dialog-scrollable>
+        <section class="dialog-header-desc">[[_hdBody]]</section>
+        <section class="dialog-header-example">
+          <span>Example:</span>
+          <span>[[_hdExample]]</span>
+        </section>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-confirm="" autofocus="">Close</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+  <script>Polymer({is:"headers-list-view",behaviors:[ArcBehaviors.HeadersParserBehavior],properties:{headers:String,_headers:Array,type:{type:String,value:"response"},_hdTitle:String,_hdBody:String,_hdExample:String},observers:["_headersChanged(headers)"],_headersChanged:function(e){this._headers=this.headersToJSON(e)},_displayHeaderInfo:function(e){var r=e.model.get("item"),a=r.name.toLowerCase(),s=this.fire("query-headers",{type:this.type,query:a}),i=s.detail.headers;if(i&&i.length){var t=i[0];this._hdTitle=t.key,this._hdBody=t.desc,this._hdExample=t.example,this.$.headerInfo.open()}this.fire("send-analytics",{type:"event",category:"Headers list",action:"Display header info",label:a})}});</script>
+</dom-module>
+</body></html>

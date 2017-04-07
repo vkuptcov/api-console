@@ -1,0 +1,37 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="body-json-editor-behavior.html">
+<link rel="import" href="object-editor.html">
+
+</head><body><dom-module id="body-json-editor">
+  <template>
+    <style>
+     :host {
+      display: block;
+      @apply(--body-json-editor);
+    }
+
+    .action-button {
+      color: var(--primary-color);
+    }
+    </style>
+    <template is="dom-if" if="[[_isObject(model.type)]]">
+      <template is="dom-repeat" items="{{model.properties}}" id="object">
+        <object-editor narrow="[[narrow]]" value="{{item}}" schema="[[schema]]"></object-editor>
+      </template>
+      <div class="add-action">
+        <paper-button class="action-button" on-tap="_appendProperty">add property</paper-button>
+      </div>
+    </template>
+    <template is="dom-if" if="[[_isArray(model.type)]]">
+      <template is="dom-repeat" items="{{model.items}}" id="array">
+        <object-editor narrow="[[narrow]]" no-key="" value="{{item}}" schema="[[schema]]"></object-editor>
+      </template>
+      <div class="add-action">
+        <paper-button class="action-button" on-tap="_appendProperty">add array item</paper-button>
+      </div>
+    </template>
+  </template>
+  <script>Number.isInteger=Number.isInteger||function(e){return"number"==typeof e&&isFinite(e)&&Math.floor(e)===e},Array.from||(Array.from=function(){var e=Object.prototype.toString,t=function(t){return"function"==typeof t||"[object Function]"===e.call(t)},r=function(e){var t=Number(e);return isNaN(t)?0:0!==t&&isFinite(t)?(t>0?1:-1)*Math.floor(Math.abs(t)):t},n=Math.pow(2,53)-1,o=function(e){var t=r(e);return Math.min(Math.max(t,0),n)};return function(e){var r=this,n=Object(e);if(null===e)throw new TypeError("Array.from requires an array-like object - not null or undefined");var i,a=arguments.length>1?arguments[1]:void 0;if("undefined"!=typeof a){if(!t(a))throw new TypeError("Array.from: when provided, the second argument must be a function");arguments.length>2&&(i=arguments[2])}for(var s,l=o(n.length),h=t(r)?Object(new r(l)):new Array(l),u=0;u<l;)s=n[u],a?h[u]="undefined"==typeof i?a(s,u):a.call(i,s,u):h[u]=s,u+=1;return h.length=l,h}}()),Polymer({is:"body-json-editor",behaviors:[ArcBehaviors.BodyJsonEditorBehavior],properties:{json:{type:Object,notify:!0},model:Object,type:Object,value:{type:String,notify:!0,value:""},opened:{type:Boolean,value:!0}},observers:["_typeChanged(type.*)","_valueChanged(opened, value)","_jsonChanged(opened, json)","_modelChanged(opened, model.*)"],listeners:{"remove-property":"_onRemoveProperty"},ready:function(){this.json||(this.json={})},_jsonChanged:function(e,t){e&&this.debounce("model-translator",function(){this.model=this._createModel(t)},250)},_createModel:function(e,t){var r={type:"object"};if(void 0===e)return r;if(t&&"array"!==t&&(r.name=""),e instanceof Array){r.type="array";var n=[];e.forEach(function(e){var t=this._createModel(e,"array");t&&(n[n.length]=t)},this),r.items=n}else if(e instanceof Object)try{var o=Object.keys(e),i=[];o.forEach(function(t){var r=this._createModel(e[t],"object");r&&(r.name=t,i[i.length]=r)},this),r.properties=i}catch(e){}else if("string"==typeof e)r.type="string",r.value=e;else if("number"==typeof e)r.type=Number.isInteger(e)?"integer":"float",r.value=e;else if("boolean"==typeof e)r.type="boolean",r.value=e;else{if(null!==e)return;r.type="null",r.value=null}return r},_isObject:function(e){return"object"===e},_isArray:function(e){return"array"===e},_onRemoveProperty:function(e){e.preventDefault(),e.stopImmediatePropagation(),e.stopPropagation();var t;if(t="object"===this.model.type?this.$$("#object"):this.$$("#array")){var r=t.indexForElement(e.target);r!==-1&&("object"===this.model.type?this.splice("model.properties",r,1):this.splice("model.items",r,1))}},_modelChanged:function(e,t){if(e){var r=t.base;r=this._computeJson(r),this._internalValueChage=!0,this.set("value",JSON.stringify(r,null,2)),this._internalValueChage=!1}},_computeJson:function(e){var t,r="array"===e.type,n=r?[]:{};if(r){if(!e.items||!e.items.length)return n;t=e.items}else{if(!e.properties||!e.properties.length)return n;t=e.properties}return t.forEach(function(e){var t;"object"===e.type||"array"===e.type?t=this._computeJson(e):(t=e.value,["integer","float"].indexOf(e.type)!==-1&&(t=Number(t),t!==t&&(t=e.value))),r?n[n.length]=t:n[e.name]=t},this),n},_appendProperty:function(){var e={name:"",type:""};if("object"===this.model.type)this.model.properties?this.push("model.properties",e):this.set("model.properties",[e]);else if(this.model.items){var t=this.model.items[this.model.items.length-1].type;e.type=t,this.push("model.items",e)}else this.set("model.items",[e])},_valueChanged:function(e,t){if(e&&!this._internalValueChage){if(!t)return this.set("json","{}");try{var r=JSON.parse(t);this.set("json",r)}catch(e){}}},_typeChanged:function(e){var t=e.base;t?this.schema=this._generateJsonSchema(t):this.schema=void 0}});</script>
+</dom-module>
+</body></html>

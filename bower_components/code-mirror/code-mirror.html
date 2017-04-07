@@ -1,0 +1,29 @@
+<html><head><link rel="import" href="codemirror-import.html">
+
+</head><body><dom-module id="code-mirror">
+  <style>
+  :host {
+    display: block;
+    @apply(--code-mirror);
+  }
+  #content {
+    display: none;
+  }
+  #wrapper {
+    @apply(--code-mirror-wrapper);
+  }
+  #wrapper .CodeMirror {
+    @apply(--code-mirror-editor);
+  }
+  </style>
+  <template strip-whitespace="">
+    <style is="custom-style" include="codemirror"></style>
+    <style is="custom-style" include="xq-light"></style>
+    <div id="wrapper"></div>
+    <div id="content">
+      <content></content>
+    </div>
+  </template>
+  <script src="code-mirror.js"></script>
+</dom-module>
+</body></html>
