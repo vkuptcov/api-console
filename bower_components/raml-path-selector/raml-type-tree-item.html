@@ -1,0 +1,15 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="raml-tree-item-behavior.html">
+<link rel="import" href="raml-tree-item-styles.html">
+
+</head><body><dom-module id="raml-type-tree-item">
+  <template>
+    <style include="raml-tree-item-styles"></style>
+    <paper-item data-path$="[[path]]" on-tap="_selectPath" class$="[[_computeItemSelectableClass(selectedPath, path)]]">
+      <span class="indentable-content">[[_computeName(type.*)]]</span>
+    </paper-item>
+  </template>
+  <script>Polymer({is:"raml-type-tree-item",behaviors:[RamlBehaviors.RamlTreeItemBehavior],properties:{type:Object},_computeName:function(e){if(e&&e.base){var a=e.base;return a.displayName||a.name||a.key}}});</script>
+</dom-module>
+</body></html>

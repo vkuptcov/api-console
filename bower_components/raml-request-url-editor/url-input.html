@@ -1,0 +1,55 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../paper-styles/typography.html">
+
+</head><body><dom-module id="url-input">
+  <template>
+    <style>
+     :host {
+      outline: none;
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .container {
+      @apply(--layout-horizontal);
+    }
+
+    .user-input {
+      width: 100%;
+      -webkit-appearance: textfield;
+      -webkit-rtl-ordering: logical;
+      user-select: text;
+      cursor: auto;
+      text-rendering: auto;
+      letter-spacing: normal;
+      word-spacing: normal;
+      text-transform: none;
+      text-indent: 0px;
+      text-shadow: none;
+      display: inline-block;
+      -webkit-writing-mode: horizontal-tb;
+      white-space: nowrap;
+      overflow: hidden;
+      word-wrap: normal;
+      -webkit-line-break: normal;
+      outline: none;
+      box-shadow: none;
+      color: var(--paper-input-container-input-color, --primary-text-color);
+      @apply(--layout-flex);
+      @apply(--paper-font-subhead);
+      @apply(--paper-input-container-input)
+    }
+
+    .variable {
+      background-color: var(--url-input-marker, yellow);
+    }
+    </style>
+    <div class="container">
+      <div class="user-input" contenteditable="true" id="userInput" aria-labelledby$="[[ariaLabel]]" disabled$="[[disabled]]" readonly$="[[readonly]]" on-keyup="_userInputHandler" on-keydown="_keyDownHandler" on-click="_userInputClickHandler" on-blur="_onBlur"></div>
+    </div>
+  </template>
+  <script>Polymer({is:"url-input",behaviors:[Polymer.IronValidatableBehavior],properties:{url:{type:String,notify:!0},required:{type:Boolean,value:!1},disabled:{type:Boolean,value:!1},readonly:{type:Boolean,value:!1},_variablesRegexp:{type:RegExp,value:function(){return/({(\w+)})/g}},ariaLabel:String},observers:["_urlChanged(url)"],hostAttributes:{tabindex:0},listeners:{focus:"_onFocus"},_urlChanged:function(e){if(!this._internalValueChange){var t=this._getInputHtml(e);return t?void(this.$.userInput.innerHTML=t):void(this.$.userInput.innerHTML=e)}},_userInputHandler:function(e){var t=e.target.innerText,r=this._getInputHtml(e.target.innerText),i=this._getCarretPosition();if(r){e.target.innerHTML=r;try{this._setCursor(e.target,i)}catch(e){}}this._internalValueChange=!0,this.set("url",t),this._internalValueChange=!1},_getInputHtml:function(e){if(!e)return null;var t=e.match(this._variablesRegexp);if(!t)return null;var r="style-scope "+this.is,i='<span class="'+r+' variable" data-id="$2">$1</span>',a=e.replace(this._variablesRegexp,i);return a},_setCursor:function(e,t){e.focus();var r=e.childNodes[t[0]],i=document.createRange();i.setStart(r,t[1]),i.setEnd(r,t[1]);var a=window.getSelection();a.removeAllRanges(),a.addRange(i)},_userInputClickHandler:function(e){var t;if(e.path?t=e.path[0]:(e=Polymer.dom(e),t=e.rootTarget),!(t&&t.classList&&t.classList.contains("variable")))return void this.fire("variable-click");var r=t.dataset.id;r&&((e.event||e).stopPropagation(),this.fire("variable-click",{variable:r}))},_getValidity:function(){var e=this.url;return!this.required&&!e||(void 0===e||!(!e&&this.required)&&(!e||null===e.match(this._variablesRegexp)))},_onBlur:function(){this.removeAttribute("focused"),this.removeAttribute("aria-focused")},_onFocus:function(){this.getAttribute("focused")||this.setAttribute("focused",!0)},focus:function(){this.$.userInput.focus()},_getCarretPosition:function(){var e=this.$.userInput,t=0,r=0,i=window.getSelection();if(1===i.rangeCount){var a=i.getRangeAt(0);if(a.collapsed){var n=a.startContainer;if(n!==e)for(var s=0,u=e.childNodes.length;s<u;s++){var o=e.childNodes[s];if(o===n){r=s;break}}t=a.startOffset}}return[r,t]},_keyDownHandler:function(e){13===e.keyCode&&(e.preventDefault(),e.stopPropagation(),this.fire("request-url-accepted",{url:this.url}))}});</script>
+</dom-module>
+</body></html>

@@ -1,0 +1,51 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="raml-request-parameters-form.html">
+
+</head><body><dom-module id="raml-request-parameters-editor">
+  <template>
+    <style include="markdown-styles"></style>
+    <style>
+    :host {
+      display: block;
+      @apply(--raml-request-parameters-editor);
+    }
+
+    h3 {
+      @apply(--raml-request-parameters-editor-subheader);
+    }
+
+    .params-title {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+
+    .params-title h3 {
+      display: inline-block;
+      margin-right: 12px;
+    }
+
+    .params-title paper-checkbox {
+      --paper-checkbox-label-color: rgba(0, 0, 0, 0.54);
+    }
+    </style>
+
+    <section hidden$="[[!hasUriParameters]]">
+      <h3>URI parameters</h3>
+      <raml-request-parameters-form id="uriParametersForm" parameters="{{_renderUriParameters}}"></raml-request-parameters-form>
+    </section>
+
+    <section hidden$="[[!hasQueryParameters]]">
+      <div class="params-title">
+        <h3>Query parameters</h3>
+        <paper-checkbox hidden$="[[!hasOptionalQueryParameters]]" checked="{{optionalQueryParamsOpened}}">Show optional parameters</paper-checkbox>
+      </div>
+      <raml-request-parameters-form id="queryParametersForm" optional-opened="[[optionalQueryParamsOpened]]" parameters="{{_renderQueryParameters}}"></raml-request-parameters-form>
+    </section>
+  </template>
+  <script>Polymer({is:"raml-request-parameters-editor",behaviors:[Polymer.IronValidatableBehavior],properties:{queryParameters:Array,_renderQueryParameters:{type:Array,computed:"_computeParameters(queryParameters.*)"},hasQueryParameters:{type:Boolean,value:!1,computed:"_computeHasParameters(_renderQueryParameters)"},uriParameters:Array,_renderUriParameters:{type:Array,computed:"_computeParameters(uriParameters.*)"},hasUriParameters:{type:Boolean,value:!1,computed:"_computeHasParameters(uriParameters)"},url:String,urlParams:{type:Array,computed:"_computeUrlParams(url)"},urlSearchRegexp:{type:String,computed:"_computeUrlRegexp(url)"},value:{type:String,notify:!0},hasOptionalQueryParameters:{type:Boolean,value:!1,computed:"_computeHasOptionalParameters(_renderQueryParameters.*)",notify:!0},optionalQueryParamsOpened:Boolean,_eventTarget:HTMLElement},listeners:{input:"_inputChanged",change:"_inputChanged",value:"_inputChanged","iron-select":"_inputChanged","dom-change":"_inputChanged"},observers:["_valueChanged(value)"],attached:function(){this._eventTarget=Polymer.dom(this).host||document,this.listen(this._eventTarget,"url-value-changed","_extValueChangedHandler")},detached:function(){this._eventTarget&&this.unlisten(this._eventTarget,"url-value-changed","_extValueChangedHandler")},_computeParameters:function(e){var r=e.base;return r&&r.length?this._transformQueryParameters(r):[]},_transformQueryParameters:function(e){return e.map(function(e){return e.required&&"undefined"!=typeof e.default&&!e.value&&(e.value=e.default),"undefined"==typeof e.value&&e.required&&(e.examples?e.value=e.examples[0]:e.example&&(e.value=e.example),e.value&&e.value.indexOf&&0===e.value.indexOf(e.name+"=")&&(e.value=e.value.substr(e.name.length+1)),"undefined"==typeof e.value&&e.enum&&e.enum.length&&(e.value=e.enum[0])),e.value&&"string"==typeof e.value&&(e.value=decodeURIComponent(e.value.replace(/\+/g," "))),Object.assign({},e)})},_computeHasParameters:function(e){return!!(e&&e instanceof Array&&e.length)},_inputChanged:function(){this._internalValueChange||this._processInput()},_processInput:function(){if(!this.url)return this._internalValueChange=!0,this.set("value",void 0),void(this._internalValueChange=!1);var e=this.url;this.hasUriParameters&&(e=this._applyUriParams(e)),this.hasQueryParameters&&(e=this._applyQueryParams(e)),this._internalValueChange=!0,this.set("value",e),this._internalValueChange=!1},_applyUriParams:function(e){var r=this.$.uriParametersForm.serialize();for(var a in r){var t=r[a];if(t&&(t=String(t),""!==t.trim())){t=this._wwwFormUrlEncodePiece(t);var n=new RegExp("{"+a+"}");e=e.replace(n,t)}}return e},_applyQueryParams:function(e){var r=this.$.queryParametersForm.serialize();for(var a in r){var t=this.getQueryParam(a),n=r[a];n||0===n||null===n||n===!1?(n=String(n),""!==n.trim()?r[a]=n:(!t||t&&!t.required)&&delete r[a]):(!t||t&&!t.required)&&delete r[a]}return(r=this._wwwFormUrlEncode(r))?e+=e.indexOf("?")!==-1?"&"+r:"?"+r:e},_wwwFormUrlEncode:function(e){if(!e)return"";var r=[];return Object.keys(e).forEach(function(a){r.push(this._wwwFormUrlEncodePiece(a)+"="+this._wwwFormUrlEncodePiece(e[a]))},this),r.join("&")},_wwwFormUrlEncodePiece:function(e){return e?encodeURIComponent(e.toString().replace(/\r?\n/g,"\r\n")).replace(/%20/g,"+"):""},getQueryParam:function(e){var r=this.queryParameters;if(!r||!r.length)return null;for(var a=0,t=r.length;a<t;a++)if(r[a].name===e)return r[a];return null},_valueChanged:function(e){if(this._internalValueChange)return void this.fire("url-value-changed",{value:e});if(e){var r=this.url;if(r){var a;if(this.urlParams&&this.urlSearchRegexp&&(a=e.match(this.urlSearchRegexp),a&&(a.shift(),this._applyUriValues(a,this.urlParams))),a=e.match(/[^&?]*?=[^&?]*/g)){var t={};a.forEach(function(e){var r=e.split("=");t[r[0]]=r[1]}),this._applyQueryParamsValues(t)}}}},_computeUrlRegexp:function(e){return e?(e=e.replace(/(\.|\/)/g,"\\$1"),e=e.replace(/{\w+}/g,"(\\w+)"),new RegExp(e)):null},_computeUrlParams:function(e){if(!e)return null;var r=e.match(/\{\w+\}/g);return r&&(r=r.map(function(e){return e.substr(1,e.length-2)})),r},_applyUriValues:function(e,r){var a=this._renderUriParameters,t=a.length;this._internalValueChange=!0,r.forEach(function(r,n){for(var u=0;u<t;u++)if(a[u].name===r){this.set(["_renderUriParameters",u,"value"],e[n]);break}},this),this._internalValueChange=!1},_applyQueryParamsValues:function(e){var r=this._renderQueryParameters,a=r.length;this._internalValueChange=!0;for(var t in e)for(var n=0;n<a;n++)if(r[n].name===t){this.set(["_renderQueryParameters",n,"value"],e[t]);break}this._internalValueChange=!1},_extValueChangedHandler:function(e){e.target!==this&&this.set("value",e.detail.value)},_getValidity:function(){var e=!0,r=!0;return this.hasUriParameters&&(e=this.$.uriParametersForm.validate()),this.hasQueryParameters&&(r=this.$.queryParametersForm.validate()),e&&r},_computeHasOptionalParameters:function(e){if(!e||!e.base||!e.base.length)return!1;for(var r=e.base,a=0,t=r.length;a<t;a++)if(!r[a].required)return!0;return!1}});</script>
+</dom-module>
+</body></html>

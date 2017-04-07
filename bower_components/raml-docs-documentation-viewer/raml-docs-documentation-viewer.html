@@ -1,0 +1,39 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../marked-element/marked-element.html">
+<link rel="import" href="../markdown-styles/markdown-styles.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+
+</head><body><dom-module id="raml-docs-documentation-viewer">
+  <template>
+    <style include="markdown-styles"></style>
+    <style>
+    :host {
+      display: block;
+      margin: 24px 0;
+
+      @apply(--raml-docs-documentation-viewer);
+    }
+
+    :host([hidden]) {
+      display: none !important;
+    }
+
+    :host([narrow]) .markdown-html {
+      max-width: calc(100vw - 32px);
+      overflow: auto;
+    }
+
+    .markdown-html {
+      @apply(--raml-docs-documentation-viewer-code);
+    }
+    </style>
+    <iron-media-query query="(max-width: [[narrowWidth]])" query-matches="{{narrow}}"></iron-media-query>
+    <div id="preview">
+      <marked-element markdown="[[documentation.content]]">
+        <div class="markdown-html"></div>
+      </marked-element>
+    </div>
+  </template>
+  <script>Polymer({is:"raml-docs-documentation-viewer",properties:{documentation:Object,autoHide:{type:Boolean,value:!1,observer:"_autoHideChanged"},hidden:{type:Boolean,value:!1,reflectToAttribute:!0},narrow:{type:Boolean,notify:!0,reflectToAttribute:!0},narrowWidth:{type:String,value:"768px"}},attached:function(){this._eventTarget=Polymer.dom(this).host||document,this.autoHide&&this._attacheListeners()},_autoHideChanged:function(e){e?this._attacheListeners():this._detachListeners()},_attacheListeners:function(){this._eventTarget&&(this._detachListeners(),this.listen(this._eventTarget,"raml-is-documentation-changed","_isDocHandler"),this.listen(this._eventTarget,"raml-selected-object-changed","_selectedChangeHandler"))},_detachListeners:function(){this._eventTarget&&(this.unlisten(this._eventTarget,"raml-is-documentation-changed","_isDocHandler"),this.unlisten(this._eventTarget,"raml-selected-object-changed","_selectedChangeHandler"))},_isDocHandler:function(e,t){var n=t.state;this.hidden=!n},_selectedChangeHandler:function(e,t){return this.hidden?void(this.documentation=void 0):void(this.documentation=t.selectedObject)}});</script>
+</dom-module>
+</body></html>

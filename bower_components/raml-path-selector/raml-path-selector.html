@@ -1,0 +1,34 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../raml-aware/raml-aware.html">
+<link rel="import" href="../raml-behaviors/raml-behavior.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+
+<link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="raml-structure-tree.html">
+
+</head><body><dom-module id="raml-path-selector">
+  <template>
+    <style>
+    :host {
+      display: block;
+
+      background-color: var(--raml-path-selector-background-color, --primary-background-color);
+      color: var(--raml-path-selector-color, --primary-text-color);
+
+      overflow: auto;
+      @apply(--raml-path-selector);
+    }
+    </style>
+    <iron-media-query query="(max-width: [[narrowWidth]])" query-matches="{{narrow}}"></iron-media-query>
+    <raml-structure-tree raml="[[raml]]" has-documentation="[[hasDocumentation]]" has-resources="[[hasResources]]" has-types="[[hasTypes]]" selected-path="{{selectedPath}}" opened="[[firstLevelOpened]]" narrow="{{_narrowValue}}" narrow-width="[[narrowWidth]]" documentation-opened="[[documentationOpened]]" types-opened="[[typesOpened]]" resources-opened="[[resourcesOpened]]"></raml-structure-tree>
+    <p class="no-structure" hidden$="[[hasResources]]">No structure detected</p>
+    <template is="dom-if" if="[[aware]]" restamp="true">
+      <raml-aware raml="{{raml}}" scope="[[aware]]"></raml-aware>
+    </template>
+  </template>
+  <script>Polymer({is:"raml-path-selector",behaviors:[Polymer.RamlBehavior],properties:{selectedPath:{type:String,notify:!0},firstLevelOpened:{type:Boolean,value:!1},hasDocumentation:{type:Boolean,value:!1,computed:"_computeHasInArray(raml.documentation.length)"},hasResources:{type:Boolean,value:!1,computed:"_computeHasInArray(raml.resources.length)"},hasTypes:{type:Boolean,value:!1,computed:"_computeHasInObject(raml.types)"},aware:String,narrow:{type:Boolean,value:!1,notify:!0,reflectToAttribute:!0},narrowWidth:{type:String,value:"768px"},forceWideLayout:{type:Boolean,value:!1,reflectToAttribute:!0},_narrowValue:{type:Boolean,value:!1,computed:"_computeNarrowValue(forceWideLayout, narrow)"},documentationOpened:Boolean,typesOpened:Boolean,resourcesOpened:Boolean},_computeHasInArray:function(e){return!!e},_computeHasInObject:function(e){return!(!e||!Object.keys(e).length)},_computeNarrowValue:function(e,o){return!e&&o}});</script>
+</dom-module>
+</body></html>

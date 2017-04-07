@@ -1,0 +1,117 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../raml-behaviors/raml-behavior.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="raml-resource-tree-item.html">
+<link rel="import" href="raml-documentation-tree-item.html">
+<link rel="import" href="raml-type-tree-item.html">
+<link rel="import" href="raml-tree-item-styles.html">
+<link rel="import" href="path-selector-documentation.html">
+<link rel="import" href="path-selector-types.html">
+<link rel="import" href="path-selector-resource.html">
+
+</head><body><dom-module id="raml-structure-tree">
+  <template>
+    <style include="raml-tree-item-styles">
+     :host {
+      display: block;
+      background-color: inherit;
+      color: inherit;
+      overflow: auto;
+      position: relative;
+      @apply(--raml-structure-tree);
+    }
+
+    h3 {
+      @apply(--arc-font-subhead);
+      color: var(--raml-path-selector-header-color, rgba(0, 0, 0, 0.54));
+      padding-left: 14px;
+      @apply(--raml-path-selector-headers);
+    }
+
+    *[hidden] {
+      display: none;
+    }
+
+    .section-title {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      cursor: pointer;
+    }
+
+    .section-title h3 {
+      @apply(--layout-flex);
+      padding-left: 0;
+      font-weight: 400;
+    }
+
+    .toggle-button {
+      color: var(--raml-path-selector-toggle-icon-color, rgba(0, 0, 0, 0.54));
+      transform: rotateZ(-90deg);
+      transition: color 0.25s linear, transform 0.3s linear;
+    }
+
+    .toggle-button.opened {
+      transform: rotateZ(0deg)
+    }
+
+    .enter-button {
+      color: var(--raml-path-selector-toggle-icon-color, rgba(0, 0, 0, 0.54));
+    }
+
+    .toggle-button:hover {
+      color: var(--raml-path-selector-toggle-icon-hover-color, rgba(0, 0, 0, 0.78));
+    }
+    </style>
+    <paper-item on-tap="_selectSummary" class$="[[_computeItemSelectedClass(selectedPath, 'summary')]]" title="API sumamry">API summary</paper-item>
+    <section class="documentation" hidden$="[[!hasDocumentation]]">
+      <div class="section-title">
+        <paper-icon-button data-section="documentation" on-tap="_toggleSection" class$="toggle-button[[_computeToggleIconClass(documentationOpened)]]" icon="arc:arrow-drop-down"></paper-icon-button>
+        <h3 data-section="documentation" on-tap="_toggleSection">Documentation</h3>
+        <paper-icon-button class="enter-button" icon="arc:chevron-right" hidden$="[[!narrow]]" data-section="documentation" on-tap="_enterSection"></paper-icon-button>
+      </div>
+      <iron-collapse opened="[[documentationOpened]]">
+        <div>
+          <template is="dom-repeat" items="[[raml.documentation]]">
+            <raml-documentation-tree-item indent="1" indent-size="24" selected-path="[[selectedPath]]" doc="[[item]]" path="documentation.[[index]]"></raml-documentation-tree-item>
+          </template>
+        </div>
+      </iron-collapse>
+    </section>
+    <section class="documentation" hidden$="[[!hasTypes]]">
+      <div class="section-title">
+        <paper-icon-button data-section="types" on-tap="_toggleSection" class$="toggle-button[[_computeToggleIconClass(typesOpened)]]" icon="arc:arrow-drop-down"></paper-icon-button>
+        <h3 data-section="types" on-tap="_toggleSection">Types</h3>
+        <paper-icon-button class="enter-button" icon="arc:chevron-right" hidden$="[[!narrow]]" data-section="types" on-tap="_enterSection"></paper-icon-button>
+      </div>
+      <iron-collapse opened="[[typesOpened]]">
+        <div>
+          <template is="dom-repeat" items="[[_objectToArray(raml.types)]]">
+            <raml-type-tree-item indent="1" indent-size="24" selected-path="[[selectedPath]]" type="[[item]]" path="types.[[index]]"></raml-type-tree-item>
+          </template>
+        </div>
+      </iron-collapse>
+    </section>
+    <section class="documentation" hidden$="[[!hasResources]]">
+      <div class="section-title">
+        <paper-icon-button data-section="resources" on-tap="_toggleSection" class$="toggle-button[[_computeToggleIconClass(resourcesOpened)]]" icon="arc:arrow-drop-down"></paper-icon-button>
+        <h3 data-section="resources" on-tap="_toggleSection">Resources</h3>
+        <paper-icon-button class="enter-button" icon="arc:chevron-right" hidden$="[[!narrow]]" data-section="resources" on-tap="_enterSection"></paper-icon-button>
+      </div>
+      <iron-collapse opened="[[resourcesOpened]]">
+        <div>
+          <template is="dom-repeat" items="[[raml.resources]]" resources="">
+            <raml-resource-tree-item indent="1" indent-size="24" selected-path="[[selectedPath]]" resource="[[item]]" path="resources.[[index]]" opened="[[opened]]" narrow="[[narrow]]"></raml-resource-tree-item>
+          </template>
+        </div>
+      </iron-collapse>
+    </section>
+    <path-selector-documentation documentation="[[raml.documentation]]" selected-path="[[selectedPath]]"></path-selector-documentation>
+    <path-selector-types types="[[_objectToArray(raml.types)]]" selected-path="[[selectedPath]]"></path-selector-types>
+    <path-selector-resource resources="[[raml.resources]]" selected-path="[[selectedPath]]" items-opened="[[opened]]"></path-selector-resource>
+  </template>
+  <script>Polymer({is:"raml-structure-tree",behaviors:[Polymer.RamlBehavior],properties:{selectedPath:{type:String,notify:!0},opened:{type:Boolean,value:!1},hasDocumentation:Boolean,hasResources:Boolean,hasTypes:Boolean,narrow:{type:Boolean,value:!1,notify:!0,reflectToAttribute:!0},narrowWidth:{type:String,value:"768px"},documentationOpened:Boolean,typesOpened:Boolean,resourcesOpened:Boolean},hostAttributes:{role:"listbox",tabindex:"0"},listeners:{"raml-path-selected":"_onPathSelected","raml-path-selector-nav-back":"_onNarrowPageBack"},observers:["_patchChanged(selectedPath)","_ramlChanged(raml)"],_onPathSelected:function(e){e.stopPropagation(),this.set("selectedPath",e.detail.path)},_patchChanged:function(e){this.fire("raml-selected-path-changed",{path:e})},_ramlChanged:function(e){e?this._selectSummary():this.set("selectedPath","")},_computeItemSelectedClass:function(e,t){return e===t?"selected":""},_selectSummary:function(){this.set("selectedPath","summary")},_objectToArray:function(e){if(e){var t=Object.keys(e);return t.map(function(t){var n=Object.assign({},e[t]);return n.key=t,n})}},_computeToggleIconClass:function(e){var t="";return e&&(t+=" opened"),t},_toggleSection:function(e){var t=this._getEventSection(e),n=t+"Opened";this[n]=!this[n]},_getEventSection:function(e){e=Polymer.dom(e);var t=e.path;if(!t||!t.length)throw new Error("Event path not defined.");for(var n;;){var o=t.shift();if(!o){var a="Invalid node selection. No data-section found in path.";throw new Error(a)}if(o.dataset&&o.dataset.section){n=o.dataset.section;break}}return n},_getNavElementForSection:function(e){var t;switch(e){case"documentation":t=this.$$("path-selector-documentation");break;case"types":t=this.$$("path-selector-types");break;case"resources":t=this.$$("path-selector-resource")}return t},_enterSection:function(e){var t=this._getEventSection(e),n=this._getNavElementForSection(t);n.opened=!0,this._subpageSection=t},_onNarrowPageBack:function(){var e=this._getNavElementForSection(this._subpageSection);e.opened=!1}});</script>
+</dom-module>
+</body></html>

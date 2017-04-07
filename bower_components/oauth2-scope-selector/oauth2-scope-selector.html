@@ -1,0 +1,110 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-input/paper-input-container.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="../paper-autocomplete/paper-autocomplete.html">
+<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../paper-tooltip/paper-tooltip.html">
+
+</head><body><dom-module id="oauth2-scope-selector">
+  <template>
+    <style>
+     :host {
+      display: block;
+      outline: none;
+      @apply(--oauth2-scope-selector);
+    }
+
+    .form-label {
+      @apply(--form-label);
+      @apply(--oauth2-scope-selector-label);
+    }
+
+    .item {
+      /*max-width: calc(100% - 32px);*/
+      width: calc(100% - 32px);
+      @apply(--oauth2-scope-selector-list-item);
+    }
+
+    paper-autocomplete {
+      top: 32px;
+    }
+
+    paper-icon-button {
+      color: var(--hint-trigger-color, rgba(0, 0, 0, 0.54));
+      transition: color 0.25s linear;
+      @apply(--icon-button);
+    }
+
+    paper-icon-button:hover {
+      color: var(--hint-trigger-hover-color, rgba(0, 0, 0, 0.78));
+      @apply(--icon-button-hover);
+    }
+
+    .scope-item {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+
+    .scope-display {
+      @apply(--layout-flex);
+      overflow: hidden;
+      @apply(--arc-font-body1);
+      font-size: 16px;
+    }
+
+    .scope-item[two-line] {
+      margin-bottom: 12px;
+    }
+
+    .scope-item[two-line] .scope-display {
+      font-weight: 400;
+    }
+
+    .scope-item-label {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .scope-display div[secondary] {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+      color: #737373;
+    }
+    </style>
+    <div class="container">
+      <label class="form-label">Scopes</label>
+      <paper-input-container no-label-float="" invalid="[[invalid]]">
+        <label>Scope value</label>
+        <input is="iron-input" bind-value="{{currentValue}}" on-keydown="_keyDown" id="input" autocomplete="off">
+        <paper-icon-button suffix="" icon="arc:add-circle-outline" on-tap="_appendScope" title="Add scope"></paper-icon-button>
+        <paper-autocomplete target="[[_inputTarget]]" source="[[_normalizeScopes(allowedScopes)]]" on-selected="_suggestionSelected" open-on-focus="">
+      </paper-autocomplete></paper-input-container>
+      <paper-tooltip for="input" position="bottom">Enter authorization scopes for this API endpoint. Check your provider's documentation for more information about scopes.</paper-tooltip>
+      <section class="scopes-list" role="list">
+        <template is="dom-repeat" items="[[scopes]]">
+          <div class="scope-item" two-line$="[[_allowedIsObject]]">
+            <div class="scope-display">
+              <div class="scope-item-label">[[item]]</div>
+              <div secondary="">[[_computeItemDescription(item)]]</div>
+            </div>
+            <paper-icon-button icon="arc:remove-circle-outline" on-tap="_removeScope"></paper-icon-button>
+          </div>
+        </template>
+      </section></div>
+    
+    <paper-toast text="Enter scope value to add a scope."></paper-toast>
+    <paper-toast dissalowed="" text="You can't enter this scope. Use one of the provided scopes."></paper-toast>
+  </template>
+  <script>Polymer({is:"oauth2-scope-selector",behaviors:[Polymer.IronControlState,Polymer.IronFormElementBehavior,Polymer.IronValidatableBehavior],properties:{scopes:{type:Array,value:function(){return[]},notify:!0},currentValue:String,_inputTarget:{type:HTMLElement,value:function(){return this.$$('input[is="iron-input"]')}},allowedScopes:Array,preventCustomScopes:Boolean,_allowedIsObject:{type:Boolean,value:!1,computed:"_computeAllowedInputType(allowedScopes)"},autoValidate:{type:Boolean,value:!1},_oldTabIndex:{type:Number,value:-1}},hostAttributes:{tabIndex:"-1"},observers:["_handleAutoValidate(autoValidate, scopes.*)"],get value(){return this.scopes},set value(e){this.scopes=e},_appendScope:function(){var e=this.currentValue;return e?(this.currentValue="",void this.append(e)):void(this.$$("paper-toast").opened=!0)},_removeScope:function(e){var t=this.$$('template[is="dom-repeat"]').itemForElement(e.target);if(t){var o=this.scopes,i=o.indexOf(t);i!==-1&&this.splice("scopes",i,1)}},_suggestionSelected:function(e,t){e.preventDefault();var o=t.value;this.append(o),this.async(function(){this.currentValue=""},1)},append:function(e){var t="string"==typeof e?e:e.value,o=this.scopes,i=o.indexOf(t);if(i===-1)return this.preventCustomScopes&&this.allowedScopes&&this.allowedScopes.length&&(i=this._findAllowedScopeIndex(t),i===-1)?void(this.$$("paper-toast[dissalowed]").opened=!0):void this.push("scopes",t)},_findAllowedScopeIndex:function(e){var t=-1,o=this.allowedScopes;if(!o||!o.length||!e)return t;if(this._allowedIsObject){for(var i=0,n=o.length;i<n;i++)if(o[i].label===e){t=i;break}}else t=this.allowedScopes.indexOf(e);return t},_keyDown:function(e){13===e.keyCode&&(this.$$("paper-autocomplete").opened||(this._appendScope(),this.async(function(){this.currentValue="",this.$$('input[is="iron-input"]').focus()},10)))},_normalizeScopes:function(e){if(e&&e.length)return e.map(function(e){return"string"==typeof e?e:{display:e.label,value:e.label}})},_computeAllowedInputType:function(e){if(!e||!e.length)return!1;var t=e[0];return"string"!=typeof t},_computeItemDescription:function(e){var t=this._findAllowedScopeIndex(e);return t===-1?"":this.allowedScopes[t].description},_getValidity:function(){return this.disabled||!this.required||this.required&&!(!this.scopes||!this.scopes.length)},_handleAutoValidate:function(e){e&&(this.invalid=!this._getValidity())}});</script>
+</dom-module>
+</body></html>

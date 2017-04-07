@@ -1,0 +1,247 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../raml-behaviors/raml-behavior.html">
+<link rel="import" href="../marked-element/marked-element.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../docs-parameters-table/docs-body-parameters-table.html">
+<link rel="import" href="../markdown-styles/markdown-styles.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../docs-parameters-table/docs-parameters-table-shared-styles.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="../iron-scroll-target-behavior/iron-scroll-target-behavior.html">
+
+</head><body><dom-module id="raml-docs-resource-viewer">
+  <template>
+    <style include="markdown-styles"></style>
+    <style include="docs-parameters-table-shared-styles"></style>
+    <style>
+     :host {
+      display: block;
+      @apply(--raml-docs-resource-viewer);
+
+      --paper-tabs-selection-bar-color: var(--params-table-header-background-color, #00A1DF);
+      --paper-tab-ink: var(--params-table-header-background-color, #00A1DF);
+
+      --paper-tab: {
+        flex: initial;
+      }
+      --content-section: {
+        padding: 8px 12px;
+      }
+    }
+
+    :host([hidden]) {
+      display: none !important;
+    }
+
+    h1 {
+      @apply(--arc-font-headline);
+      @apply(--content-section);
+      @apply(--raml-docs-h1);
+    }
+
+    h2 {
+      @apply(--arc-font-title);
+      @apply(--content-section);
+      @apply(--raml-docs-h2);
+    }
+
+    h3 {
+      @apply(--paper-font-subhead);
+      @apply(--content-section);
+      @apply(--raml-docs-h3);
+    }
+
+    .resource-name {
+      font-weight: 500;
+    }
+
+    .resource-desc {
+      @apply(--arc-font-body1);
+      @apply(--content-section);
+      @apply(--raml-docs-item-description);
+    }
+
+    .type-block {
+      @apply(--content-section);
+    }
+
+    .params-table,
+    docs-body-parameters-table {
+      max-width: var(--raml-docs-table-max-width, 800px);
+    }
+
+    .sub-resources-list {
+      @apply(--content-section);
+    }
+
+    a {
+      color: var(--raml-docs-link-color, #00A1DF);
+      @apply(--raml-docs-link);
+    }
+
+    .container {
+      @apply(--layout-horizontal);
+      @apply(--raml-docs-resource-viewer-container);
+    }
+
+    .main {
+      @apply(--layout-flex);
+      overflow: auto;
+      @apply(--raml-docs-resource-viewer-content);
+    }
+
+    nav {
+      width: 210px;
+      border-left: 1px #e5e5e5 solid;
+      padding-left: 12px;
+      margin: 12px 0;
+      position: relative;
+      display: none;
+      @apply(--raml-docs-resource-viewer-navigation);
+    }
+
+    [wide-layout] nav {
+      display: block;
+      @apply(--raml-docs-resource-viewer-navigation-wide-layout);
+    }
+
+    #nav-links {
+      position: absolute;
+    }
+
+    #nav-links a {
+      display: block;
+      padding: 8px 12px;
+      margin: 8px 0;
+    }
+
+    :host([narrow]) .container {
+      max-width: var(--raml-docs-resource-viewer-narrow-container-width, calc(100vw - 32px));
+      overflow: auto;
+    }
+
+    .section-title-area {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      border-bottom: 1px var(--raml-docs-resource-viewer-title-border-color, #e5e5e5) solid;
+    }
+
+    .section-title-area h2 {
+      @apply(--layout-flex);
+    }
+
+    .toggle-button {
+      color: var(--response-status-view-toggle-icon-color, rgba(0, 0, 0, 0.54));
+      transition: color 0.25s linear;
+    }
+
+    .toggle-icon {
+      transform: rotateZ(0deg);
+      transition: transform 0.3s linear;
+    }
+
+    .toggle-icon.opened {
+      transform: rotateZ(-180deg);
+    }
+
+    .toggle-button:hover {
+      color: var(--response-status-view-toggle-icon-hover-color, rgba(0, 0, 0, 0.78));
+    }
+    </style>
+
+    <iron-media-query query="(min-width: 800px)" query-matches="{{wide}}"></iron-media-query>
+    <iron-media-query query="(max-width: [[narrowWidth]])" query-matches="{{narrow}}"></iron-media-query>
+
+    <div class="container" wide-layout$="{{wide}}">
+      <div class="main">
+        <div class="title-area">
+          <h1 id="overview" class="title">
+            <span>Resource: </span>
+            <span class="resource-name">[[_computeResourceName(raml.*)]]</span>
+          </h1>
+        </div>
+        <template is="dom-if" if="[[raml.description]]">
+          <marked-element smartypants="" markdown="[[raml.description]]">
+            <div class="markdown-html resource-desc"></div>
+          </marked-element>
+        </template>
+        <section hidden$="[[!hasTypes]]">
+          <div class="section-title-area">
+            <h2 id="resources">Types</h2>
+            <div class="title-area-actions">
+              <paper-button on-tap="toggleTypesCollapse" class="toggle-button" title="Toogle types details">
+                [[_computeToggleActionLabel(typesOpened)]]
+                <iron-icon icon="arc:expand-more" class$="[[_computeToggleIconClass(typesOpened)]]"></iron-icon>
+              </paper-button>
+            </div>
+          </div>
+          <iron-collapse opened="[[typesOpened]]">
+            <template is="dom-repeat" items="[[types]]">
+              <div class="type-block">
+                <docs-body-parameters-table narrow="[[narrow]]" body="[[item]]" auto-hide=""></docs-body-parameters-table>
+              </div>
+            </template>
+          </iron-collapse>
+        </section>
+        <section hidden$="[[!hasSubproperties]]">
+          <div class="section-title-area">
+            <h2 id="methods">Methods and sub-resources</h2>
+            <div class="title-area-actions">
+              <paper-button on-tap="toggleMethodsCollapse" class="toggle-button" title="Toogle methods and sub-resources details">
+                [[_computeToggleActionLabel(methodsOpened)]]
+                <iron-icon icon="arc:expand-more" class$="[[_computeToggleIconClass(methodsOpened)]]"></iron-icon>
+              </paper-button>
+            </div>
+          </div>
+          <iron-collapse opened="[[methodsOpened]]">
+            <div class="sub-resources-list">
+              <table class="params-table" id="substable">
+                <thead class="params-table-header">
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr hidden$="[[!methods]]" class="params-table-header subheader">
+                    <td colspan="3">Methods</td>
+                  </tr>
+                  <template is="dom-repeat" items="[[methods]]">
+                    <tr>
+                      <td class="param-name"><a href="#" data-path$="[[item.path]]">[[item.meta.name]]</a></td>
+                      <td class="param-desc">[[item.meta.description]]</td>
+                    </tr>
+                  </template>
+                  <tr hidden$="[[!resources]]" class="params-table-header subheader">
+                    <td colspan="3">Sub-resources</td>
+                  </tr>
+                  <template is="dom-repeat" items="[[resources]]">
+                    <tr>
+                      <td class="param-name"><a href="#" data-path$="[[item.path]]">[[item.meta.name]]</a></td>
+                      <td class="param-desc">[[item.meta.description]]</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </iron-collapse>
+        </section>
+      </div>
+      <nav>
+        <div id="nav-links">
+          <a href="#overview">Overview</a>
+          <a hidden$="[[!hasTypes]]" href="#resources">Resources</a>
+          <a href="#methods">Methods</a>
+        </div>
+      </nav>
+    </div>
+  </template>
+  <script>Polymer({is:"raml-docs-resource-viewer",behaviors:[Polymer.RamlBehavior,Polymer.IronScrollTargetBehavior],properties:{types:{type:Array,readOnly:!0},hasTypes:{type:Boolean,value:!1,computed:"_computeHasTypes(types.length)"},currentPath:{type:String},methods:Array,resources:Array,hasSubproperties:{type:Boolean,computed:"_computeHasSubproperties(methods, resources)"},autoHide:{type:Boolean,value:!1,observer:"_autoHideChanged"},hidden:{type:Boolean,value:!1,reflectToAttribute:!0},wide:{type:Boolean,value:!1},narrow:{type:Boolean,notify:!0,reflectToAttribute:!0},narrowWidth:{type:String,value:"768px"},typesOpened:{type:Boolean,value:!0},methodsOpened:{type:Boolean,value:!0}},observers:["_computeTypes(raml.*)","_computeMethods(currentPath, raml.*)","_computeResources(currentPath, raml.*)"],listeners:{"substable.tap":"_subResourceTap","nav-links.tap":"_navLinksTap"},attached:function(){this._eventTarget=Polymer.dom(this).host||document,this.autoHide&&this._attacheListeners(),this.listen(window,"scroll","_scrollHandler")},detached:function(){this._detachListeners(),this.unlisten(window,"scroll","_scrollHandler")},_autoHideChanged:function(e){e?this._attacheListeners():this._detachListeners()},_attacheListeners:function(){return this._eventTarget?(this._detachListeners(),this.listen(this._eventTarget,"raml-is-resource-changed","_isResourceHandler"),this.listen(this._eventTarget,"raml-selected-object-changed","_selectedChangeHandler"),void this.listen(this._eventTarget,"raml-selected-path-changed","_selectedPathChangeHandler")):void(this.hidden=!0)},_detachListeners:function(){this._eventTarget&&(this.unlisten(this._eventTarget,"raml-is-resource-changed","_isResourceHandler"),this.unlisten(this._eventTarget,"raml-selected-object-changed","_selectedChangeHandler"),this.unlisten(this._eventTarget,"raml-selected-path-changed","_selectedPathChangeHandler"))},_isResourceHandler:function(e,t){var s=t.state;this.hidden=!s},_selectedChangeHandler:function(e,t){return this.hidden?void(this.raml=void 0):void(this.raml=t.selectedObject)},_selectedPathChangeHandler:function(e,t){return this.hidden?void(this.currentPath=void 0):void(this.currentPath=t.path)},_computeResourceName:function(){var e=this.raml;return e?e.displayName||e.relativeUri:""},_computeTypes:function(){var e=this.raml;if(!e)return void this._setTypes(void 0);var t=[],s=this;e.methods&&e.methods.length&&e.methods.forEach(function(e){var r=s._listTypes(e);r&&(t=t.concat(r))}),this._setTypes(t)},_listTypes:function(e){var t=this,s=[],r=t._extractType(e);if(r&&(s[s.length]=r),e.responses){var n=Object.keys(e.responses);n.forEach(function(r){var n=e.responses[r],o=t._extractType(n);o&&(s[s.length]=o)})}return s},_extractType:function(e){if(e&&e.body&&e.body.length)return e.body},_computeHasTypes:function(){return!(!this.types||!this.types.length)},_computeMethods:function(e){var t=this.raml;if(!(e&&t&&t.methods&&t.methods.length))return void(this.methods=null);var s=[];t.methods.forEach(function(t,r){s[s.length]={path:e+".methods."+r,meta:{name:t.displayName||t.method,description:t.description}}}),0===s.length&&(s=null),this.methods=s},_computeResources:function(e){var t=this.raml;if(!(e&&t&&t.resources&&t.resources.length))return void(this.resources=null);var s=[];t.resources.forEach(function(t,r){s[s.length]={path:e+".resources."+r,meta:{name:t.displayName||t.relativeUri,description:t.description}}}),0===s.length&&(s=null),this.resources=s},_computeHasSubproperties:function(e,t){return!!(e&&e.length||t&&t.length)},_subResourceTap:function(e){e.preventDefault(),e.stopPropagation();var t=e.target.dataset.path;t&&this.fire("raml-path-changed",{path:t})},_navLinksTap:function(e){e.preventDefault(),e.stopPropagation();var t=e.target.getAttribute("href");if(t){var s=this.$$(t);this.scroll(0,s.offsetTop)}},_scrollHandler:function(){var e=this.$$("#nav-links"),t=e.parentNode,s=t.getBoundingClientRect().top;if(s<24){var r=Math.abs(s)+24;e.style.top=r+"px"}else e.style.removeProperty("top")},_computeToggleIconClass:function(e){var t="toggle-icon";return e&&(t+=" opened"),t},_computeToggleActionLabel:function(e){return e?"Hide":"Show"},toggleTypesCollapse:function(){this.typesOpened=!this.typesOpened},toggleMethodsCollapse:function(){this.methodsOpened=!this.methodsOpened}});</script>
+</dom-module>
+</body></html>
