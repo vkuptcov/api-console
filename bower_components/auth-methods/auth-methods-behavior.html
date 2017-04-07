@@ -1,4 +1,4 @@
 <html><head><link rel="import" href="../polymer/polymer.html">
 
-<script>!function(){window.ArcBehaviors=window.ArcBehaviors||{},window.ArcBehaviors.AuthMethodsBehavior={properties:{description:String,stepStartIndex:{type:Number,value:1}},_getAuthType:function(){var t=this.nodeName.toLowerCase();switch(t){case"auth-method-basic":return"basic";case"auth-method-ntlm":return"ntlm";case"auth-method-oauth1":return"oauth1";case"auth-method-oauth2":return"oauth2";case"auth-method-digest":return"digest"}},_computeStep:function(t,e){return t+e}}}();</script>
+<script>!function(){window.ArcBehaviors=window.ArcBehaviors||{},window.ArcBehaviors.AuthMethodsBehavior={properties:{description:String,stepStartIndex:{type:Number,value:1}},_getAuthType:function(){switch(this.nodeName.toLowerCase()){case"auth-method-basic":return"basic";case"auth-method-ntlm":return"ntlm";case"auth-method-oauth1":return"oauth1";case"auth-method-oauth2":return"oauth2";case"auth-method-digest":return"digest"}},_computeStep:function(t,e){return t+e}}}();</script>
 </head><body></body></html>
