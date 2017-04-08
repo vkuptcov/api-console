@@ -23,6 +23,7 @@
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/api-console-ext-comm/api-console-ext-comm.html">
+<link rel="import" href="../bower_components/platinum-https-redirect/platinum-https-redirect.html">
 <link rel="import" href="api-console-styles.html">
 
 </head><body><dom-module id="api-console-app">
@@ -86,6 +87,7 @@
     <app-location route="{{route}}" use-hash-as-path=""></app-location>
     <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
     <app-route route="{{subroute}}" pattern="/:path" data="{{subrouteData}}"></app-route>
+    <platinum-https-redirect></platinum-https-redirect>
 
     <div class="loader" hidden$="[[!working]]">
       <paper-spinner active="[[working]]"></paper-spinner>
