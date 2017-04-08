@@ -31,6 +31,6 @@
     <prism-highlight max-read="[[maxRead]]" hidden$="[[!hasResponse]]" id="prism" code="[[responseText]]" lang$="[[contentType]]"></prism-highlight>
     <p class="no-info" hidden$="[[hasResponse]]">Nothing to dispplay.</p>
   </template>
-  <script>Polymer({is:"response-highlighter",behaviors:[ArcBehaviors.TextSearchBehavior],properties:{responseText:String,hasResponse:{type:Boolean,value:!1,computed:"_computeHasResponse(responseText)"},contentType:String,_textSearch:{type:HTMLElement,value:function(){return this.$.prism.$.output}},query:{type:String,observer:"_queryChanged"},maxRead:Number},_queryChanged:function(e){if(!e)return void this.cleanMarked();this.mark(e)},_computeHasResponse:function(e){return!!e},_computeActionsPanelClass:function(e){var t="actions-panel";return e||(t+=" hidden"),t}});</script>
+  <script>Polymer({is:"response-highlighter",behaviors:[ArcBehaviors.TextSearchBehavior],properties:{responseText:String,hasResponse:{type:Boolean,value:!1,computed:"_computeHasResponse(responseText)"},contentType:String,_textSearch:{type:HTMLElement,value:function(){return this.$.prism.$.output}},query:{type:String,observer:"_queryChanged"},maxRead:Number},_queryChanged:function(e){return e?void this.mark(e):void this.cleanMarked()},_computeHasResponse:function(e){return!!e},_computeActionsPanelClass:function(e){var t="actions-panel";return e||(t+=" hidden"),t}});</script>
 </dom-module>
 </body></html>
