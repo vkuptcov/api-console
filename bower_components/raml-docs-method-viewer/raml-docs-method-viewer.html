@@ -202,7 +202,7 @@
             </div>
           </div>
           <iron-collapse opened="[[parametersOpened]]">
-            <docs-parameters-table uri-parameters="[[raml.allUriParameters]]" query-parameters="[[raml.queryParameters]]" has-query-parameteres="{{hasQueryParameteres}}" has-uri-parameteres="{{hasUriParameteres}}" auto-hide=""></docs-parameters-table>
+            <docs-parameters-table uri-parameters="[[raml.allUriParameters]]" query-parameters="[[raml.queryParameters]]" has-query-parameteres="{{hasQueryParameteres}}" has-uri-parameteres="{{hasUriParameteres}}" narrow="[[narrow]]" auto-hide=""></docs-parameters-table>
           </iron-collapse>
         </section>
 
@@ -217,7 +217,7 @@
             </div>
           </div>
           <iron-collapse opened="[[headersOpened]]">
-            <docs-headers-table has-headers="{{hasHeaders}}" headers="[[raml.headers]]" auto-hide=""></docs-headers-table>
+            <docs-headers-table has-headers="{{hasHeaders}}" headers="[[raml.headers]]" narrow="[[narrow]]" auto-hide=""></docs-headers-table>
           </iron-collapse>
         </section>
 
@@ -232,7 +232,7 @@
             </div>
           </div>
           <iron-collapse opened="[[bodyOpened]]">
-            <docs-body-parameters-table body="[[raml.body]]"></docs-body-parameters-table>
+            <docs-body-parameters-table body="[[raml.body]]" narrow="[[narrow]]"></docs-body-parameters-table>
           </iron-collapse>
         </section>
       </section>

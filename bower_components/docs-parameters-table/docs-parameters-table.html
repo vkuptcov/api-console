@@ -9,7 +9,7 @@
   <template>
     <style include="markdown-styles"></style>
     <style include="docs-parameters-table-shared-styles"></style>
-    <table class="params-table">
+    <h5 class="narrow-title">Properties</h5><table class="params-table">
       <thead class="params-table-header">
         <tr>
           <th>Parameter</th>
@@ -17,6 +17,7 @@
           <th>Description</th>
         </tr>
       </thead>
+      
       <tbody>
         <template is="dom-if" if="[[hasUriParameteres]]">
           <tr class="params-table-header subheader path">
@@ -68,6 +69,6 @@
       </tbody>
     </table>
   </template>
-  <script>Polymer({is:"docs-parameters-table",behaviors:[RamlBehaviors.DocsParametersBehavior],properties:{uriParameters:Object,queryParameters:Object,hasUriParameteres:{type:Boolean,computed:"_computeHasUriParameteres(uriParameters.*)",value:!1,notify:!0},hasQueryParameteres:{type:Boolean,computed:"_computeHasQueryParameteres(queryParameters.*)",value:!1,notify:!0},hasParameters:{type:Boolean,computed:"_computeHasParameteres(hasQueryParameteres, hasUriParameteres)",value:!1,notify:!0},autoHide:{type:Boolean,value:!1},displayUriParameters:{type:Array,computed:"_computeProperty(uriParameters.*)"},displayQueryParameters:{type:Array,computed:"_computeProperty(queryParameters.*)"}},observers:["_autoHide(autoHide, hasQueryParameteres, hasUriParameteres)"],_computeHasUriParameteres:function(){return!(!this.uriParameters||!Object.keys(this.uriParameters).length)},_computeHasQueryParameteres:function(){return!(!this.queryParameters||!Object.keys(this.queryParameters).length)},_autoHide:function(e,r,t){e&&(r||t?this.removeAttribute("hidden"):this.setAttribute("hidden",!0))},_computeProperty:function(e){return e.path in this?this.readProperties(this[e.path]):[]},_computeEnumValue:function(e){return e&&e.length?(e=e.map(function(e){return"string"==typeof e?e:e.displayName||e.name||e.key}),e.join(", ")):""},_computeHasParameteres:function(e,r){return!(!e&&!r)}});</script>
+  <script>Polymer({is:"docs-parameters-table",behaviors:[RamlBehaviors.DocsParametersBehavior],properties:{uriParameters:Object,queryParameters:Object,hasUriParameteres:{type:Boolean,computed:"_computeHasUriParameteres(uriParameters.*)",value:!1,notify:!0},hasQueryParameteres:{type:Boolean,computed:"_computeHasQueryParameteres(queryParameters.*)",value:!1,notify:!0},hasParameters:{type:Boolean,computed:"_computeHasParameteres(hasQueryParameteres, hasUriParameteres)",value:!1,notify:!0},autoHide:{type:Boolean,value:!1},displayUriParameters:{type:Array,computed:"_computeProperty(uriParameters.*)"},displayQueryParameters:{type:Array,computed:"_computeProperty(queryParameters.*)"},narrow:{type:Boolean,reflectToAttribute:!0}},observers:["_autoHide(autoHide, hasQueryParameteres, hasUriParameteres)"],_computeHasUriParameteres:function(){return!(!this.uriParameters||!Object.keys(this.uriParameters).length)},_computeHasQueryParameteres:function(){return!(!this.queryParameters||!Object.keys(this.queryParameters).length)},_autoHide:function(e,r,t){e&&(r||t?this.removeAttribute("hidden"):this.setAttribute("hidden",!0))},_computeProperty:function(e){return e.path in this?this.readProperties(this[e.path]):[]},_computeEnumValue:function(e){return e&&e.length?(e=e.map(function(e){return"string"==typeof e?e:e.displayName||e.name||e.key}),e.join(", ")):""},_computeHasParameteres:function(e,r){return!(!e&&!r)}});</script>
 </dom-module>
 </body></html>
