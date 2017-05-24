@@ -1,5 +1,5 @@
 #!/bin/bash
 
-api-console build https://anypoint.mulesoft.com/apiplatform/repository/v2/organizations/52560d3f-c37a-409d-9887-79e0a9a9ecff/public/apis/7782/versions/7918/files/api.raml --verbose
+api-console build https://cdn.rawgit.com/advanced-rest-client/raml-example-api/d8b474ff/api.raml --json --inline-json --verbose
 cp -R build/. .
 rm -rf build/
