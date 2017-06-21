@@ -1,9 +1,11 @@
-FROM node:4.7
+FROM node:8.1-alpine
 
 # Install Ruby (for Gem)
-RUN apt-get update \
-    && apt-get install -y ruby \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add \
+   git ruby \
+   &&  echo 'gem: --no-document' > /etc/gemrc \
+   && rm -rvf /var/cache/apk/
+
 
 # Install Bower, Grunt & SASS
 RUN npm install -g bower grunt-cli \
